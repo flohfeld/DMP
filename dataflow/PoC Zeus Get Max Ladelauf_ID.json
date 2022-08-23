@@ -1,0 +1,34 @@
+{
+	"name": "PoC Zeus Get Max Ladelauf_ID",
+	"properties": {
+		"folder": {
+			"name": "ZEUS PoC"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SQL_URLAUBSANSPRUCH",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				}
+			],
+			"sinks": [
+				{
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "Aggregate1"
+				},
+				{
+					"name": "DerivedColumn2"
+				}
+			],
+			"script": "source(output(\n\t\tSTICHTAG as date,\n\t\tSTAMMKST as decimal(11,0),\n\t\tBST_NR as decimal(6,0),\n\t\tBST_NAME as string,\n\t\tZEUS_FUNKTION_BEZEICHNUNG as string,\n\t\tBASISKENNZAHL_NAME as string,\n\t\tMENGENEINHEIT as string,\n\t\tWERTART as string,\n\t\tBEZUGSDATUM as date,\n\t\tWERT as integer,\n\t\tLADELAUF_ID as decimal(22,0),\n\t\tFGUELTIG_VON as date,\n\t\tFGUELTIG_BIS as date\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> source2\nsource2 aggregate(LADELAUF_ID = max(LADELAUF_ID)) ~> Aggregate1\nAggregate1 derive(LADELAUF_ID = iifNull(LADELAUF_ID, 0)) ~> DerivedColumn2\nDerivedColumn2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tstore: 'cache',\n\tformat: 'inline',\n\toutput: true,\n\tsaveOrder: 1) ~> sink1"
+		}
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"name": "SQL_Create Schema Test",
+	"properties": {
+		"content": {
+			"query": "CREATE SCHEMA [tbtest]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "sqlpool1",
+				"poolName": "sqlpool1"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

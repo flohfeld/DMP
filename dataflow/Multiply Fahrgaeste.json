@@ -1,0 +1,96 @@
+{
+	"name": "Multiply Fahrgaeste",
+	"properties": {
+		"description": "increase by 500%",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "fahrgaeste_medium_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "fahrgaeste_medium_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				},
+				{
+					"dataset": {
+						"referenceName": "fahrgaeste_medium_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source3"
+				},
+				{
+					"dataset": {
+						"referenceName": "fahrgaeste_medium_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source4"
+				},
+				{
+					"dataset": {
+						"referenceName": "fahrgaeste_medium_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source5"
+				},
+				{
+					"dataset": {
+						"referenceName": "fahrgaeste_medium_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source6"
+				},
+				{
+					"dataset": {
+						"referenceName": "fahrgaeste_medium_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source7"
+				},
+				{
+					"dataset": {
+						"referenceName": "fahrgaeste_medium_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source8"
+				},
+				{
+					"dataset": {
+						"referenceName": "fahrgaeste_medium_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source9"
+				},
+				{
+					"dataset": {
+						"referenceName": "fahrgaeste_medium_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source10"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DemoFahrgaesteSink_processed",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "Union1"
+				}
+			],
+			"script": "source(output(\n\t\tZugnr as string,\n\t\tStation as string,\n\t\tEinsteiger as string,\n\t\tAussteiger as string,\n\t\tdtmIstAnkunftDatum as string,\n\t\tdtmIstAbfahrtDatum as string,\n\t\t{DS100 kurz} as string,\n\t\tstrKurzbezeichnung as string,\n\t\t{Z�hler} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source1\nsource(output(\n\t\tZugnr as string,\n\t\tStation as string,\n\t\tEinsteiger as string,\n\t\tAussteiger as string,\n\t\tdtmIstAnkunftDatum as string,\n\t\tdtmIstAbfahrtDatum as string,\n\t\t{DS100 kurz} as string,\n\t\tstrKurzbezeichnung as string,\n\t\t{Z�hler} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source2\nsource(output(\n\t\tZugnr as string,\n\t\tStation as string,\n\t\tEinsteiger as string,\n\t\tAussteiger as string,\n\t\tdtmIstAnkunftDatum as string,\n\t\tdtmIstAbfahrtDatum as string,\n\t\t{DS100 kurz} as string,\n\t\tstrKurzbezeichnung as string,\n\t\t{Z�hler} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source3\nsource(output(\n\t\tZugnr as string,\n\t\tStation as string,\n\t\tEinsteiger as string,\n\t\tAussteiger as string,\n\t\tdtmIstAnkunftDatum as string,\n\t\tdtmIstAbfahrtDatum as string,\n\t\t{DS100 kurz} as string,\n\t\tstrKurzbezeichnung as string,\n\t\t{Z�hler} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source4\nsource(output(\n\t\tZugnr as string,\n\t\tStation as string,\n\t\tEinsteiger as string,\n\t\tAussteiger as string,\n\t\tdtmIstAnkunftDatum as string,\n\t\tdtmIstAbfahrtDatum as string,\n\t\t{DS100 kurz} as string,\n\t\tstrKurzbezeichnung as string,\n\t\t{Z�hler} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source5\nsource(output(\n\t\tZugnr as string,\n\t\tStation as string,\n\t\tEinsteiger as string,\n\t\tAussteiger as string,\n\t\tdtmIstAnkunftDatum as string,\n\t\tdtmIstAbfahrtDatum as string,\n\t\t{DS100 kurz} as string,\n\t\tstrKurzbezeichnung as string,\n\t\t{Z�hler} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source6\nsource(output(\n\t\tZugnr as string,\n\t\tStation as string,\n\t\tEinsteiger as string,\n\t\tAussteiger as string,\n\t\tdtmIstAnkunftDatum as string,\n\t\tdtmIstAbfahrtDatum as string,\n\t\t{DS100 kurz} as string,\n\t\tstrKurzbezeichnung as string,\n\t\t{Z�hler} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source7\nsource(output(\n\t\tZugnr as string,\n\t\tStation as string,\n\t\tEinsteiger as string,\n\t\tAussteiger as string,\n\t\tdtmIstAnkunftDatum as string,\n\t\tdtmIstAbfahrtDatum as string,\n\t\t{DS100 kurz} as string,\n\t\tstrKurzbezeichnung as string,\n\t\t{Z�hler} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source8\nsource(output(\n\t\tZugnr as string,\n\t\tStation as string,\n\t\tEinsteiger as string,\n\t\tAussteiger as string,\n\t\tdtmIstAnkunftDatum as string,\n\t\tdtmIstAbfahrtDatum as string,\n\t\t{DS100 kurz} as string,\n\t\tstrKurzbezeichnung as string,\n\t\t{Z�hler} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source9\nsource(output(\n\t\tZugnr as string,\n\t\tStation as string,\n\t\tEinsteiger as string,\n\t\tAussteiger as string,\n\t\tdtmIstAnkunftDatum as string,\n\t\tdtmIstAbfahrtDatum as string,\n\t\t{DS100 kurz} as string,\n\t\tstrKurzbezeichnung as string,\n\t\t{Z�hler} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source10\nsource1, source2, source3, source4, source5, source6, source7, source8, source9, source10 union(byName: true)~> Union1\nUnion1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['fahrgaeste2016_2017_verylargeV2.csv'],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> sink1"
+		}
+	}
+}

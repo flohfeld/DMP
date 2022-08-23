@@ -1,0 +1,41 @@
+{
+	"name": "PoC Zeus Import_copy1",
+	"properties": {
+		"folder": {
+			"name": "ZEUS PoC"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ZEUS_INPUT1",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SQL_URLAUBSANSPRUCH",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "DerivedColumn1"
+				},
+				{
+					"name": "Filter1"
+				},
+				{
+					"name": "DBColumnMapping"
+				}
+			],
+			"script": "parameters{\n\tDF_LADELAUF_ID as decimal(10,0) (toDecimal(1,22,0))\n}\nsource(output(\n\t\tStichtag as date 'dd.MM.yyyy',\n\t\t{MA-KBST} as integer,\n\t\t{MA-RKOST} as integer,\n\t\t{BST-Nr} as integer,\n\t\t{BST-Name} as string,\n\t\tJobfamilie as string,\n\t\tJobfamilie_Bez as string,\n\t\t{Tätigkeitsgruppe} as short,\n\t\t{Tätigkeitsgruppe_Bez} as string,\n\t\t{Tätigkeitsdifferenzierung} as short,\n\t\t{Tätigkeitsdifferenzierung_bez} as string,\n\t\t{Urlaub-Soll-Gesamt} as short,\n\t\t{Urlaub-Restanspruch-Gesamt} as short,\n\t\t{MA-Kat} as string,\n\t\t{MA-Kat_bez} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source1\nFilter1 derive(STAMMKST = concat(toString({MA-KBST}), toString({MA-RKOST})),\n\t\tBASISKENNZAHL_NAME = \"Urlaubsanspruch\",\n\t\tWERTART = \"IST\",\n\t\tWERT = 100,\n\t\tLADELAUF_ID = $DF_LADELAUF_ID,\n\t\tMENGENEINHEIT = \"Tage\") ~> DerivedColumn1\nsource1 filter({MA-Kat}!=\"P\") ~> Filter1\nDerivedColumn1 select(mapColumn(\n\t\tStichtag,\n\t\tSTAMMKST,\n\t\tBST_Nr = {BST-Nr},\n\t\tBST_Name = {BST-Name},\n\t\tZEUS_FUNKTION_BEZEICHNUNG = {Tätigkeitsdifferenzierung_bez},\n\t\tBASISKENNZAHL_NAME,\n\t\tMENGENEINHEIT,\n\t\tWERTART,\n\t\tBEZUGSDATUM = Stichtag,\n\t\tWERT,\n\t\tLADELAUF_ID,\n\t\tFGUELTIG_VON = Stichtag,\n\t\tFGUELTIG_BIS = Stichtag\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: false,\n\tskipDuplicateMapOutputs: false) ~> DBColumnMapping\nDBColumnMapping sink(allowSchemaDrift: false,\n\tvalidateSchema: true,\n\tinput(\n\t\tSTICHTAG as date,\n\t\tSTAMMKST as decimal(11,0),\n\t\tBST_NR as decimal(6,0),\n\t\tBST_NAME as string,\n\t\tZEUS_FUNKTION_BEZEICHNUNG as string,\n\t\tBASISKENNZAHL_NAME as string,\n\t\tMENGENEINHEIT as string,\n\t\tWERTART as string,\n\t\tBEZUGSDATUM as date,\n\t\tWERT as integer,\n\t\tLADELAUF_ID as decimal(22,0),\n\t\tFGUELTIG_VON as date,\n\t\tFGUELTIG_BIS as date\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: false,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> sink1"
+		}
+	}
+}

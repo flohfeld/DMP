@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 7",
+	"properties": {
+		"content": {
+			"query": "DROP PROCEDURE [dbo].[SP_SP_RVCreateUrlaubSoll]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE PROC [dbo].[SP_RVCreateUrlaubSoll] @Stichtag VARCHAR(255), @Ladelauf_ID VARCHAR(5)\nAS\n\nDECLARE @SQLString NVARCHAR(1000)\nDECLARE @SourceFile NVARCHAR(255)\nDECLARE @ParmDefinition NVARCHAR(500)\n\nSET @SourceFile = 'https://stak8ddmpdev1processed.dfs.core.windows.net/processed/PocZeus/Regelverarbeitung/' + @Filename\n\n\nSET @SQLString = 'COPY INTO dbo.MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH \\\n(STICHTAG,   STAMMKST,   BST_NR,   BST_NAME,   ZEUS_FUNKTION_BEZEICHNUNG,   BASISKENNZAHL_NAME,   MENGENEINHEIT,   WERTART,   BEZUGSDATUM,   WERT,   FGUELTIG_VON,   LADELAUF_ID default ' + @Ladelauf_ID + ',   FGUELTIG_BIS default ''31.12.2199'' \\\n) FROM \\\n''' + @SourceFile + ''' \\\nWITH (    FILE_TYPE = ''CSV'',\tFIELDTERMINATOR = '';'',\tFIELDQUOTE = '''' \\\n,    ENCODING = ''UTF8''   \\\n,    DATEFORMAT = ''dmy'',    FIRSTROW = 2)'  \n\nSET @ParmDefinition = ''  \nEXEC sp_executesql @SQLString",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

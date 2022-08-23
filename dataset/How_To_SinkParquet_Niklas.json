@@ -1,0 +1,21 @@
+{
+	"name": "How_To_SinkParquet_Niklas",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storecaptured",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "How_To_Captured_Niklas",
+				"fileSystem": "captured"
+			},
+			"compressionCodec": "none"
+		},
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

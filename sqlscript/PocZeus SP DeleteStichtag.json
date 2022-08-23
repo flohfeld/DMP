@@ -1,0 +1,17 @@
+{
+	"name": "PocZeus SP DeleteStichtag",
+	"properties": {
+		"content": {
+			"query": "DROP PROCEDURE [dbo].[SP_DeleteStichtag]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE PROC [dbo].[SP_DeleteStichtag] @Stichtag Date\nAS\n\nDELETE FROM dbo.MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH Where Stichtag=@Stichtag\nGo",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "sqlpool1",
+				"poolName": "sqlpool1"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

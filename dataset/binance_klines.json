@@ -1,0 +1,37 @@
+{
+	"name": "binance_klines",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "binanceREST_API",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"symbol": "@dataset().symbol",
+				"startTime": "@dataset().startTime"
+			}
+		},
+		"parameters": {
+			"symbol": {
+				"type": "string",
+				"defaultValue": "BTCEUR"
+			},
+			"interval": {
+				"type": "string",
+				"defaultValue": "1d"
+			},
+			"startTime": {
+				"type": "string",
+				"defaultValue": "1628985600000"
+			}
+		},
+		"folder": {
+			"name": "binance"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": ""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

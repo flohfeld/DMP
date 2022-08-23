@@ -1,0 +1,50 @@
+{
+	"name": "DF_ImportFahrgaeste2017",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "fahrgaeste_csv",
+						"type": "DatasetReference"
+					},
+					"name": "Fahrgaeste",
+					"description": "Demo Daten aus Datei zur Verarbeitung einlesen"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DemoFahrgaesteSink",
+						"type": "DatasetReference"
+					},
+					"name": "Fahrgaeste2017"
+				},
+				{
+					"dataset": {
+						"referenceName": "DemoFahrgaesteSink",
+						"type": "DatasetReference"
+					},
+					"name": "StationAGG"
+				}
+			],
+			"transformations": [
+				{
+					"name": "FilterAuf2017"
+				},
+				{
+					"name": "SelektiereZielSpalten"
+				},
+				{
+					"name": "NachZuegensortieren"
+				},
+				{
+					"name": "SummiereEinsteigerJeStation",
+					"description": "Summiere Einsteiger je Station"
+				}
+			],
+			"script": "source(output(\n\t\tZugnr as string,\n\t\tStation as string,\n\t\tEinsteiger as integer,\n\t\tAussteiger as string,\n\t\tdtmIstAnkunftDatum as timestamp 'dd.MM.yyyy',\n\t\tdtmIstAbfahrtDatum as string,\n\t\t{DS100 kurz} as string,\n\t\tstrKurzbezeichnung as string,\n\t\t{Z�hler} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> Fahrgaeste\nFahrgaeste filter(greater(dtmIstAnkunftDatum, toTimestamp('2016-12-31 23:59:59', 'yyyy-MM-dd HH:mm:ss'))) ~> FilterAuf2017\nFilterAuf2017 select(mapColumn(\n\t\tZugnr,\n\t\tStation,\n\t\tEinsteiger,\n\t\tAussteiger,\n\t\tdtmIstAnkunftDatum,\n\t\tdtmIstAbfahrtDatum,\n\t\t{DS100 kurz},\n\t\tstrKurzbezeichnung\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelektiereZielSpalten\nSelektiereZielSpalten sort(asc(Zugnr, true)) ~> NachZuegensortieren\nFilterAuf2017 aggregate(groupBy(Station),\n\tEinsteiger = sum(Einsteiger)) ~> SummiereEinsteigerJeStation\nNachZuegensortieren sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tsaveOrder: 1) ~> Fahrgaeste2017\nSummiereEinsteigerJeStation sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> StationAGG"
+		}
+	}
+}

@@ -1,0 +1,162 @@
+{
+	"name": "ExcelWorkarroundConverter",
+	"properties": {
+		"folder": {
+			"name": "Spielwiese"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "sparkpool0",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/0494c897-f1d8-40e6-802f-a5d7b636b9f0/resourceGroups/rsgk8ddmpdev1/providers/Microsoft.Synapse/workspaces/swak8ddmpdev1/bigDataPools/sparkpool0",
+				"name": "sparkpool0",
+				"type": "Spark",
+				"endpoint": "https://swak8ddmpdev1.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool0",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "2.4",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			}
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"# https://www.aizoo.info/post/processing-excel-data-using-spark-with-azure-synapse-analytics\r\n",
+					"# https://github.com/Azure-Samples/Synapse/blob/main/Notebooks/PySpark/02%20Read%20and%20write%20data%20from%20Azure%20Blob%20Storage%20WASB.ipynb\r\n",
+					"# https://github.com/MicrosoftDocs/azure-docs/issues/62501\r\n",
+					"# https://docs.microsoft.com/en-us/answers/questions/93296/azure-synapse-workspace-how-to-read-an-excel-file.html\r\n",
+					"\r\n",
+					"from pyspark.sql import SparkSession\r\n",
+					"\r\n",
+					"# Azure storage access info\r\n",
+					"blob_account_name = \"stak8ddmpdev1landing\"\r\n",
+					"blob_container_name = \"landing\"\r\n",
+					"blob_relative_path = \"Einweisung\"\r\n",
+					"linked_service_name = \"storelanding\"\r\n",
+					"blob_sas_token = mssparkutils.credentials.getConnectionStringOrCreds(linked_service_name)\r\n",
+					"\r\n",
+					"\r\n",
+					"# Allow SPARK to access from Blob remotely\r\n",
+					"wasbs_path = 'wasbs://%s@%s.blob.core.windows.net/%s' % (blob_container_name, blob_account_name, blob_relative_path)\r\n",
+					"spark.conf.set('fs.azure.sas.%s.%s.blob.core.windows.net' % (blob_container_name, blob_account_name), blob_sas_token)\r\n",
+					"print('Remote blob path: ' + wasbs_path)\r\n",
+					"\r\n",
+					""
+				],
+				"attachments": null,
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"microsoft": {
+						"language": "python"
+					},
+					"collapsed": true
+				},
+				"source": [
+					"%%pyspark\r\n",
+					"blob_account_name = \"stak8ddmpdev1landing\"\r\n",
+					"blob_container_name = \"landing\"\r\n",
+					"from pyspark.sql import SparkSession\r\n",
+					"\r\n",
+					"sc = SparkSession.builder.getOrCreate()\r\n",
+					"token_library = sc._jvm.com.microsoft.azure.synapse.tokenlibrary.TokenLibrary\r\n",
+					"blob_sas_token = token_library.getConnectionString(\"storelanding\")\r\n",
+					"\r\n",
+					"spark.conf.set(\r\n",
+					"    'fs.azure.sas.%s.%s.blob.core.windows.net' % (blob_container_name, blob_account_name),\r\n",
+					"    blob_sas_token)\r\n",
+					"df = spark.read.load('wasbs://landing@stak8ddmpdev1landing.blob.core.windows.net/Einweisung/Passagierzahlen.csv', format='csv'\r\n",
+					"## If header exists uncomment line below\r\n",
+					"##, header=True\r\n",
+					")\r\n",
+					"display(df.limit(10))"
+				],
+				"attachments": null,
+				"execution_count": 10
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": true
+				},
+				"source": [
+					"\r\n",
+					"#https://stak8ddmpdev1landing.blob.core.windows.net/landing/Einweisung/testexcel.xlsx\r\n",
+					"\r\n",
+					"mssparkutils.fs.ls(wasbs_path)\r\n",
+					"\r\n",
+					"# import pandas as pd\r\n",
+					"# ReadExcel=pd.read_excel(wasbs_path + \"/testexcel.xlsx\")\r\n",
+					"# print(ReadExcel)\r\n",
+					"\r\n",
+					"# geht erst ab spark 3, das excel modul gibt es noch in spark 2.4\r\n",
+					"# source_df = (spark.read\r\n",
+					"#    .format(\"excel\")\r\n",
+					"#    .option(\"cellAddress\", \"A1\")\r\n",
+					"#    .option(\"headerRowCount\", \"1\")\r\n",
+					"#    .option(\"sheetNamePattern\", \"Tabelle1\")\r\n",
+					"#    .option(\"includeSheetName\", \"true\")\r\n",
+					"#    .load(wasbs_path + \"/testexcel.xlsx\")\r\n",
+					"# )"
+				],
+				"attachments": null,
+				"execution_count": 9
+			}
+		]
+	}
+}

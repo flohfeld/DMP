@@ -1,0 +1,199 @@
+{
+	"name": "09 Creating a managed Spark Table BKU1OK",
+	"properties": {
+		"folder": {
+			"name": "dmp_examples"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "sparkpool0",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1",
+				"state": {
+					"a0f7b42b-2504-43ea-bcce-6c7a7b5165d5": {
+						"type": "Synapse.DataFrame",
+						"sync_state": {
+							"table": {
+								"rows": [
+									{
+										"name": "Bangalore",
+										"population": 10540000
+									},
+									{
+										"name": "Beijing",
+										"population": 21540000
+									},
+									{
+										"name": "San Francisco",
+										"population": 881549
+									},
+									{
+										"name": "Seattle",
+										"population": 730400
+									}
+								],
+								"schema": {
+									"name": "string",
+									"population": "int"
+								}
+							},
+							"isSummary": false,
+							"language": "scala"
+						},
+						"persist_state": {
+							"view": {
+								"type": "details",
+								"chartOptions": {
+									"chartType": "bar",
+									"aggregationType": "sum",
+									"categoryFieldKeys": [
+										"name"
+									],
+									"seriesFieldKeys": [
+										"population"
+									],
+									"isStacked": false
+								}
+							}
+						}
+					}
+				}
+			},
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/0494c897-f1d8-40e6-802f-a5d7b636b9f0/resourceGroups/rsgk8ddmpdev1/providers/Microsoft.Synapse/workspaces/swak8ddmpdev1/bigDataPools/sparkpool0",
+				"name": "sparkpool0",
+				"type": "Spark",
+				"endpoint": "https://swak8ddmpdev1.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool0",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "2.4",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			}
+		},
+		"cells": [
+			{
+				"cell_type": "markdown",
+				"source": [
+					"# Creating a managed Spark table\n",
+					"This notebook describes how to create a managed table from Spark. \n",
+					"The table is created in the Synapse warehouse folder in your primary storage account. The table will be synchronized and available in Synapse SQL Pools. \n",
+					""
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"spark.sql(\"CREATE TABLE cities  (name STRING, population INT) USING PARQUET\")\n",
+					""
+				],
+				"attachments": null,
+				"execution_count": 1
+			},
+			{
+				"cell_type": "markdown",
+				"source": [
+					"Insert a few rows into the table using a list of values.\n",
+					""
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"spark.sql(\"INSERT INTO cities VALUES (\\'Seattle\\', 730400), (\\'San Francisco\\', 881549), (\\'Beijing\\', 21540000), (\\'Bangalore\\', 10540000)\")"
+				],
+				"attachments": null,
+				"execution_count": 2
+			},
+			{
+				"cell_type": "markdown",
+				"source": [
+					"* Retrieve values back. Click on 'Chart' below to review the visualization.\n",
+					""
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"diagram": {
+						"activateDiagramType": 2,
+						"chartConfig": {
+							"category": "bar",
+							"keys": [
+								"name"
+							],
+							"values": [
+								"population"
+							],
+							"yLabel": "population",
+							"xLabel": "name",
+							"aggregation": "SUM",
+							"aggByBackend": false
+						},
+						"aggData": "{\"population\":{\"Bangalore\":10540000,\"Beijing\":21540000,\"San Francisco\":881549,\"Seattle\":730400}}",
+						"isSummary": false,
+						"previewData": {
+							"filter": null
+						},
+						"isSql": false
+					},
+					"collapsed": false
+				},
+				"source": [
+					"display(spark.sql(\"SELECT * FROM cities ORDER BY name\"))"
+				],
+				"attachments": null,
+				"execution_count": 3
+			},
+			{
+				"cell_type": "markdown",
+				"source": [
+					"Drop the table. Please note the data will get deleted from the primary storage account associated with this workspace.\n",
+					""
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"spark.sql(\"DROP TABLE cities\")"
+				],
+				"attachments": null,
+				"execution_count": 4
+			}
+		]
+	}
+}

@@ -1,0 +1,233 @@
+{
+	"name": "Notebook 4",
+	"properties": {
+		"folder": {
+			"name": "Spielwiese"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "sparkpool0",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 1,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "1",
+				"spark.dynamicAllocation.maxExecutors": "1"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1",
+				"state": {
+					"b3d6ac0f-7b5d-4965-acab-b9d2a74cd917": {
+						"type": "Synapse.DataFrame",
+						"sync_state": {
+							"table": {
+								"rows": [
+									{
+										"0": "Zugnr;Station;Einsteiger;Aussteiger;dtmIstAnkunftDatum;dtmIstAbfahrtDatum;DS100 kurz;strKurzbezeichnung"
+									},
+									{
+										"0": "37073;Wedel;7"
+									},
+									{
+										"0": "37073;Rissen;4"
+									},
+									{
+										"0": "37073;S�lldorf;0"
+									},
+									{
+										"0": "37073;Iserbrook;0"
+									},
+									{
+										"0": "37073;Blankenese;3"
+									},
+									{
+										"0": "37073;Hochkamp;0"
+									},
+									{
+										"0": "37073;Klein Flottbek;3"
+									},
+									{
+										"0": "37073;Othmarschen;0"
+									},
+									{
+										"0": "37073;Bahrenfeld;1"
+									}
+								],
+								"schema": [
+									{
+										"key": "0",
+										"name": "_c0",
+										"type": "string"
+									}
+								]
+							},
+							"isSummary": false,
+							"language": "scala"
+						},
+						"persist_state": {
+							"view": {
+								"type": "details",
+								"chartOptions": {
+									"chartType": "bar",
+									"aggregationType": "count",
+									"categoryFieldKeys": [
+										"0"
+									],
+									"seriesFieldKeys": [
+										"0"
+									],
+									"isStacked": false
+								}
+							}
+						}
+					}
+				}
+			},
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/0494c897-f1d8-40e6-802f-a5d7b636b9f0/resourceGroups/rsgk8ddmpdev1/providers/Microsoft.Synapse/workspaces/swak8ddmpdev1/bigDataPools/sparkpool0",
+				"name": "sparkpool0",
+				"type": "Spark",
+				"endpoint": "https://swak8ddmpdev1.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool0",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "2.4",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			}
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"from pyspark.sql import SparkSession\r\n",
+					"from pyspark.sql.types import *\r\n",
+					"\r\n",
+					"# Primary storage info\r\n",
+					"account_name = 'stak8ddmpdev1curated' # fill in your primary account name\r\n",
+					"container_name = 'curated' # fill in your container name\r\n",
+					"relative_path = 'Einweisung' # fill in your relative folder path\r\n",
+					"\r\n",
+					"adls_path = 'abfss://%s@%s.dfs.core.windows.net/%s' % (container_name, account_name, relative_path)\r\n",
+					"print('Primary storage account path: ' + adls_path)"
+				],
+				"attachments": null,
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"microsoft": {
+						"language": "python"
+					},
+					"collapsed": false
+				},
+				"source": [
+					"%%pyspark\r\n",
+					"df = spark.read.load('abfss://curated@stak8ddmpdev1curated.dfs.core.windows.net/Einweisung/passagierzahlen2009.csv', format='csv'\r\n",
+					"## If header exists uncomment line below\r\n",
+					"##, header=True\r\n",
+					")\r\n",
+					"display(df.limit(10))"
+				],
+				"attachments": null,
+				"execution_count": 7
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": true
+				},
+				"source": [
+					"parquet_path = adls_path + 'holiday.parquet'\r\n",
+					"json_path = adls_path + 'holiday.json'\r\n",
+					"csv_path = adls_path + 'holiday.csv'\r\n",
+					"print('parquet file path: ' + parquet_path)\r\n",
+					"print('json file path�s ' + json_path)\r\n",
+					"print('csv file path: ' + csv_path)"
+				],
+				"attachments": null,
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": true
+				},
+				"source": [
+					"mssparkutils.fs.ls(adls_path)\r\n",
+					"\r\n",
+					"import pandas as pd\r\n",
+					"ReadCSV=pd.read_csv('abfss://curated@stak8ddmpdev1curated.dfs.core.windows.net/Einweisung/passagierzahlen2009.csv')\r\n",
+					"#ReadExcel=pd.read_excel(\"abfss://curated@stak8ddmpdev1curated.dfs.core.windows.net/Einweisung/testexcel.xlsx\")\r\n",
+					"print(ReadExcel)"
+				],
+				"attachments": null,
+				"execution_count": 12
+			}
+		]
+	}
+}

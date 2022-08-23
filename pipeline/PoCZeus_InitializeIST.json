@@ -1,0 +1,205 @@
+{
+	"name": "PoCZeus_InitializeIST",
+	"properties": {
+		"activities": [
+			{
+				"name": "Eingangsdateien listen",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "CuratedGetMetadataDataset",
+						"type": "DatasetReference",
+						"parameters": {
+							"SourceContainer": "/curated",
+							"SourceDirectory": "/PocZeus/ToProcess/Ist"
+						}
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Nur Dateien",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Nur Dateien').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Kopiere Datei zur Verarbeitung",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": false,
+										"deleteFilesAfterCompletion": false
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "PocZeusCuratedBinary",
+									"type": "DatasetReference",
+									"parameters": {
+										"Container": "@pipeline().parameters.SourceStore_Location",
+										"Directory": "@pipeline().parameters.SourceStore_Directory",
+										"filename": "@item().name"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "PocZeusInputFile",
+									"type": "DatasetReference"
+								}
+							]
+						},
+						{
+							"name": "Data flow1",
+							"type": "ExecuteDataFlow",
+							"dependsOn": [
+								{
+									"activity": "Kopiere Datei zur Verarbeitung",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "1.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataflow": {
+									"referenceName": "PoC Zeus Erzeuge Ist Dateien",
+									"type": "DataFlowReference",
+									"parameters": {
+										"DF_LADELAUF_ID": "toDecimal(1,22,0)",
+										"TARGET_DIR": "\"PocZeus/Ist/\""
+									}
+								},
+								"compute": {
+									"coreCount": 8,
+									"computeType": "General"
+								},
+								"traceLevel": "Fine"
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Nur Dateien",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "Eingangsdateien listen",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Eingangsdateien listen').output.childItems",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@equals(item().type, 'File')",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"SourceStore_Location": {
+				"type": "string",
+				"defaultValue": "/curated"
+			},
+			"SourceStore_Directory": {
+				"type": "string",
+				"defaultValue": "/PocZeus/ToProcess/Ist"
+			},
+			"DestinationStore_Location": {
+				"type": "string",
+				"defaultValue": "/processed"
+			},
+			"DestinationStore_Directory": {
+				"type": "string",
+				"defaultValue": "/PocZeus/Temp/InputFile"
+			}
+		},
+		"variables": {
+			"PIP_LADELAUF_ID_LAST": {
+				"type": "String",
+				"defaultValue": "-1"
+			},
+			"PIP_LADELAUF_ID_NEXT": {
+				"type": "String",
+				"defaultValue": "-1"
+			}
+		},
+		"folder": {
+			"name": "PoC Zeus"
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-11-14T09:02:25Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

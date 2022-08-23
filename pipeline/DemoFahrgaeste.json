@@ -1,0 +1,37 @@
+{
+	"name": "DemoFahrgaeste",
+	"properties": {
+		"activities": [
+			{
+				"name": "ImportFahrgaeste2017",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_ImportFahrgaeste2017",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 48,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"folder": {
+			"name": "DemoFahrgaeste"
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-11-02T08:16:44Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

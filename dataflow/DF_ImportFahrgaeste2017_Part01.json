@@ -1,0 +1,39 @@
+{
+	"name": "DF_ImportFahrgaeste2017_Part01",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "fahrgaeste_csv",
+						"type": "DatasetReference"
+					},
+					"name": "Fahrgaeste"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DemoFahrgaesteSink",
+						"type": "DatasetReference"
+					},
+					"name": "Fahrgaeste2017"
+				}
+			],
+			"transformations": [
+				{
+					"name": "FilterAuf2017",
+					"description": "test1"
+				},
+				{
+					"name": "SelektiereZielSpalten"
+				},
+				{
+					"name": "NachZuegensortieren"
+				}
+			],
+			"script": "source(output(\n\t\tZugnr as string,\n\t\tStation as string,\n\t\tEinsteiger as integer,\n\t\tAussteiger as string,\n\t\tdtmIstAnkunftDatum as timestamp 'dd.MM.yyyy',\n\t\tdtmIstAbfahrtDatum as string,\n\t\t{DS100 kurz} as string,\n\t\tstrKurzbezeichnung as string,\n\t\t{Z�hler} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> Fahrgaeste\nFahrgaeste filter(greater(dtmIstAnkunftDatum, toTimestamp('2016-12-31 23:59:59', 'yyyy-MM-dd HH:mm:ss'))) ~> FilterAuf2017\nFilterAuf2017 select(mapColumn(\n\t\tZugnr,\n\t\tStation,\n\t\tEinsteiger,\n\t\tAussteiger,\n\t\tdtmIstAnkunftDatum,\n\t\tdtmIstAbfahrtDatum,\n\t\t{DS100 kurz},\n\t\tstrKurzbezeichnung\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelektiereZielSpalten\nSelektiereZielSpalten sort(asc(Zugnr, true)) ~> NachZuegensortieren\nNachZuegensortieren sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['Zuege2017.csv'],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tsaveOrder: 0,\n\tpartitionBy('hash', 1)) ~> Fahrgaeste2017"
+		}
+	}
+}

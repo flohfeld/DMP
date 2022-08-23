@@ -1,0 +1,45 @@
+{
+	"name": "ZEUS_LOOKUP",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storecurated",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "PoC_ZEUS"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "MIP_ZEUS_URLAUB_Lookup.txt",
+				"folderPath": "PocZeus/Referenzen",
+				"fileSystem": "curated"
+			},
+			"columnDelimiter": ";",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Zeus_funktion_id",
+				"type": "String"
+			},
+			{
+				"name": "Zeus_Funktion_Bezeichnung",
+				"type": "String"
+			},
+			{
+				"name": "TaetigkeitsID",
+				"type": "String"
+			},
+			{
+				"name": "RKOST_NR",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

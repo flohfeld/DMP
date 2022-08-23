@@ -1,0 +1,37 @@
+{
+	"name": "PocZeusCapturedBinary",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storecaptured",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Directory": {
+				"type": "string"
+			},
+			"Filename": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "PoC_ZEUS"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().Filename",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().Directory",
+					"type": "Expression"
+				},
+				"fileSystem": "captured"
+			}
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

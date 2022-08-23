@@ -1,0 +1,453 @@
+{
+	"name": "How_To_GetDataBrokerFiles_generic_Niklas",
+	"properties": {
+		"folder": {
+			"name": "Spielwiese"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "sparkpool0",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "a4786cec-ca9e-4d47-952f-fc5de4cbbcf8"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/0494c897-f1d8-40e6-802f-a5d7b636b9f0/resourceGroups/rsgk8ddmpdev1/providers/Microsoft.Synapse/workspaces/swak8ddmpdev1/bigDataPools/sparkpool0",
+				"name": "sparkpool0",
+				"type": "Spark",
+				"endpoint": "https://swak8ddmpdev1.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool0",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.1",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Generisches Notebook zum Abzug von Dateien in einer Datenquelle des DataBrokers\r\n",
+					"Variable Parameter müssen in der Pipeline unter Notebook>Settings>BaseParameters definiert werden.\r\n",
+					"Diese Parameter überschreiben die Parameter des ersten Codeblocks.\r\n",
+					""
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Variablen definieren\r\n",
+					"#### Workspace\r\n",
+					"- _tbd_: explanation\r\n",
+					"#### Speicherpfad\r\n",
+					"- _container_name_: Container-Name des Storage Accounts\r\n",
+					"- _account_name_: Storage Account Name, in welchem die Datei gespeichert werden soll\r\n",
+					"- _folder_structure_: Die Ordner-Struktur, in welche die Dateien gespeichert werden sollen\r\n",
+					"#### Databroker\r\n",
+					"- _data_source_id_: Die DataSource des Databrokers, aus welcher die Liste aller zu herunterladenden Dateien erzeugt werden soll.\r\n",
+					"- _date_from_: Frühester Erstellungszeitpunkt von Dateien in einer DataSource\r\n",
+					"- _is_data_source_gzipped_: Erwartet in der DataSource nur .gz Dateien, entpackt diese und speichert die entpackten Resultate.\r\n",
+					""
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"tags": [
+						"parameters"
+					]
+				},
+				"source": [
+					"# Parameter die in der Pipeline definiert/ überschrieben werden\r\n",
+					"keyvaultName = '' #fill in Keyvault Name\r\n",
+					"folder_structure = '' # Ablageort ohne \"/\" am Anfang und Ende\r\n",
+					"data_source_id = '' # Ordner im DataBroker\r\n",
+					"date_from = '2022-07-01' # Nach ISO 8601 (yyyy-MM-ddThh:mm:ss), Zeitstempel ist optional\r\n",
+					"is_data_source_gzipped = True\r\n",
+					"file_format = '' # Dateiendung für den Schreibbefehl"
+				],
+				"attachments": null,
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Parameter, die nicht überschrieben werden\r\n",
+					"container_name = 'landing' # fill in your container name\r\n",
+					"account_name = 'X8Ga21LJH2exDpjYCmu11egTsJevOMal' # fill in your primary account name"
+				],
+				"attachments": null,
+				"execution_count": 8
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Get Data Broker Secrets\r\n",
+					"Secrets für den Databroker aus dem KeyVault auslesen"
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"microsoft": {
+						"language": "python"
+					}
+				},
+				"source": [
+					"%%pyspark\r\n",
+					"from notebookutils import mssparkutils\r\n",
+					"import sys\r\n",
+					"from pyspark.sql import SparkSession\r\n",
+					"\r\n",
+					"sc = SparkSession.builder.getOrCreate()\r\n",
+					"token_library = sc._jvm.com.microsoft.azure.synapse.tokenlibrary.TokenLibrary\r\n",
+					"\r\n",
+					"linkedServiceName = 'CustomerSecretsVault'\r\n",
+					"\r\n",
+					"#Lesen der DataBroker Secrets aus dem Azure KeyVault\r\n",
+					"databrokerClientId = token_library.getSecret(keyvaultName, \"databroker-client-id\", linkedServiceName)\r\n",
+					"databrokerSecret = token_library.getSecret(keyvaultName, \"databroker-client-secret\", linkedServiceName)"
+				],
+				"attachments": null,
+				"execution_count": 9
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Get Access Token\r\n",
+					"Access Token für den Databroker mit den zuvor ausgelesenen Secrets beantragen"
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import requests\r\n",
+					"\r\n",
+					"payload = {'client_id': databrokerClientId,'scope':'datasources', 'client_secret':databrokerSecret,'grant_type': 'client_credentials'}\r\n",
+					"\r\n",
+					"api_url = \"https://auth.businesshub.deutschebahn.com/auth/realms/data-broker/protocol/openid-connect/token\"\r\n",
+					"result = requests.post(api_url, data=payload)\r\n",
+					"access_token=result.json()['access_token']\r\n",
+					"print(access_token)\r\n",
+					"\r\n",
+					"import datetime\r\n",
+					"# Wir messen die Zeit, wann das Access Token erstellt wurde\r\n",
+					"now = datetime.datetime.now()"
+				],
+				"attachments": null,
+				"execution_count": null
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Get File Metadata\r\n",
+					"Gebe eine Liste mit allen Dateien aus, welche sich in einer DataSource befinden + filtert alte Dateien (date_from)"
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"payload = {'dataSourceId': data_source_id,'dateFrom': date_from}\r\n",
+					"headers = {\"Authorization\": \"Bearer \" + access_token}\r\n",
+					"\r\n",
+					"databroker_api_url = \"https://databroker.service.deutschebahn.com/api/files-api/v1/files/\"\r\n",
+					"file_list = requests.get(databroker_api_url, params=payload, headers=headers)\r\n",
+					"\r\n",
+					"fileID_to_download = [file_id['id'] for file_id in file_list.json()['files']] # ID\r\n",
+					"size_to_download = [file_id['size'] for file_id in file_list.json()['files']] # Size (wird nicht genutzt)\r\n",
+					"fileName_to_download = [file_id['custom']['originalFilename'] for file_id in file_list.json()['files']] # OriginalName\r\n",
+					"creationTime_to_download = [file_id['fileCreatedAt'] for file_id in file_list.json()['files']] # CreationTime"
+				],
+				"attachments": null,
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import pandas as pd\r\n",
+					"metadata = pd.DataFrame(\r\n",
+					"    {'FileID': fileID_to_download,\r\n",
+					"     'Size': size_to_download,\r\n",
+					"     'OrginalName': fileName_to_download,\r\n",
+					"     'CreationTime': creationTime_to_download\r\n",
+					"    }\r\n",
+					")"
+				],
+				"attachments": null,
+				"execution_count": null
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Clear Files in Folder\r\n",
+					"Löscht alle Dateien, die im Ordner abliegen, in den die neuen Daten geladen werden sollen"
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"adls_DelPath = 'abfss://%s@%s.dfs.core.windows.net/%s' % (container_name, account_name, folder_structure)\r\n",
+					"mssparkutils.fs.rm(adls_DelPath, True)"
+				],
+				"attachments": null,
+				"execution_count": null
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Download non-gz files from DataBroker"
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": true
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"if not is_data_source_gzipped:\r\n",
+					"    for index, metarow in metadata.iterrows():\r\n",
+					"        fileID = metarow[0]\r\n",
+					"        fileName = metarow[2] + \"_\" + metarow[0] + \"_\" + metarow[3] # Dateiname: Name_ID_Ablegedatum\r\n",
+					"\r\n",
+					"        time_delta = datetime.datetime.now() - now\r\n",
+					"        #check if jwt is not expired (renew every 20 mins)\r\n",
+					"        if time_delta.total_seconds() < 1200:\r\n",
+					"            api_url = \"https://databroker.service.deutschebahn.com/api/files-api/v1/files/\" + file_id\r\n",
+					"            headers = {\"Authorization\": \"Bearer \" + access_token}\r\n",
+					"            file = requests.get(api_url, headers=headers)\r\n",
+					"            adls_path = 'abfss://%s@%s.dfs.core.windows.net/%s/%s' % (container_name, account_name, folder_structure, fileName, file_format)\r\n",
+					"            #chunk file in 500Mb pieces\r\n",
+					"            for j in file.iter_content(500000000):\r\n",
+					"                mssparkutils.fs.append(adls_path, str(j, 'utf-8'), True)\r\n",
+					"        else:\r\n",
+					"            # renew jwt token\r\n",
+					"            payload = {'client_id': databrokerClientId,'scope':'datasources', 'client_secret':databrokerSecret,'grant_type': 'client_credentials'}\r\n",
+					"            api_url = \"https://auth.businesshub.deutschebahn.com/auth/realms/data-broker/protocol/openid-connect/token\"\r\n",
+					"            result = requests.post(api_url, data=payload)\r\n",
+					"            access_token=result.json()['access_token']\r\n",
+					"            now = datetime.datetime.now()"
+				],
+				"attachments": null,
+				"execution_count": null
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Download gz files from DataBroker"
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import gzip\r\n",
+					"\r\n",
+					"if is_data_source_gzipped:\r\n",
+					"    for index, metarow in metadata.iterrows():\r\n",
+					"        fileID = metarow[0]\r\n",
+					"        fileName = metarow[2].split('.')[0] + \"_\" + metarow[0] + \"_\" + metarow[3] # Name_ID_Ablegedatum\r\n",
+					"\r\n",
+					"        time_delta = datetime.datetime.now() - now\r\n",
+					"        #check if jwt is not expired (renew every 20 mins)\r\n",
+					"        if time_delta.total_seconds() < 1200:\r\n",
+					"            api_url = \"https://databroker.service.deutschebahn.com/api/files-api/v1/files/\" + fileID\r\n",
+					"            headers = {\"Authorization\": \"Bearer \" + access_token}\r\n",
+					"            file = requests.get(api_url, headers=headers)\r\n",
+					"            # Festlegen des Pfades für den Schreib-Befehl\r\n",
+					"            adls_path = 'abfss://%s@%s.dfs.core.windows.net/%s/%s%s' % (container_name, account_name, folder_structure, fileName, file_format)\r\n",
+					"            data = gzip.decompress(file.content).decode('utf-8')\r\n",
+					"            #chunk file in pieces\r\n",
+					"            for i in range(0, len(data), 100000000):\r\n",
+					"                mssparkutils.fs.append(adls_path, data[i:i+100000000], True)\r\n",
+					"        else:\r\n",
+					"            # renew jwt token\r\n",
+					"            payload = {'client_id': databrokerClientId,'scope':'datasources', 'client_secret':databrokerSecret,'grant_type': 'client_credentials'}\r\n",
+					"            api_url = \"https://auth.businesshub.deutschebahn.com/auth/realms/data-broker/protocol/openid-connect/token\"\r\n",
+					"            result = requests.post(api_url, data=payload)\r\n",
+					"            access_token=result.json()['access_token']\r\n",
+					"            now = datetime.datetime.now()"
+				],
+				"attachments": null,
+				"execution_count": null
+			}
+		]
+	}
+}

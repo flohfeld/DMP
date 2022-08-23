@@ -1,0 +1,15 @@
+{
+	"name": "sql_dev1_db_sqlk8ddmpdev1sld1",
+	"type": "Microsoft.Synapse/workspaces/linkedservices",
+	"properties": {
+		"type": "AzureSqlDatabase",
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		},
+		"annotations": [],
+		"typeProperties": {
+			"connectionString": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=sqsk8ddmpdev1dev1.database.windows.net;Initial Catalog=sqlk8ddmpdev1sqlk8ddmpdev1sld1"
+		}
+	}
+}

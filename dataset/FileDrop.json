@@ -1,0 +1,22 @@
+{
+	"name": "FileDrop",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storeexploration",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "databroker"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "exploration"
+			}
+		},
+		"schema": {}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

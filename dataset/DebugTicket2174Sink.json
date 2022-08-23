@@ -1,0 +1,32 @@
+{
+	"name": "DebugTicket2174Sink",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storelanding",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "DebugIssues"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "DebugTicket2174",
+				"fileSystem": "landing"
+			},
+			"columnDelimiter": ";",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Vorname;Nachname;Ort",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

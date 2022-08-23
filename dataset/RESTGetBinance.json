@@ -1,0 +1,21 @@
+{
+	"name": "RESTGetBinance",
+	"properties": {
+		"description": "Connection to your REST/HTTP",
+		"linkedServiceName": {
+			"referenceName": "binanceREST_API",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"symbol": "BTCEUR",
+				"startTime": "1623110400000"
+			}
+		},
+		"folder": {
+			"name": "binance"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

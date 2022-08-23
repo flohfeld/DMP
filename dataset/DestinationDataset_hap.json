@@ -1,0 +1,27 @@
+{
+	"name": "DestinationDataset_hap",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storeprocessed",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "einweisung"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "testconvertfromxls",
+				"fileSystem": "processed"
+			},
+			"compressionCodec": "snappy",
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

@@ -1,0 +1,32 @@
+{
+	"name": "PocZeusProcessed",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storeprocessed",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "PoC_ZEUS"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "PocZeus/IST",
+				"fileSystem": "processed"
+			},
+			"columnDelimiter": ";",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Stichtag;MA-KBST;MA-RKOST;BST-Nr;BST-Name;Jobfamilie;Jobfamilie_Bez;Tätigkeitsgruppe;Tätigkeitsgruppe_Bez;Tätigkeitsdifferenzierung;Tätigkeitsdifferenzierung_bez;Urlaub-Soll-Gesamt;Urlaub-Restanspruch-Gesamt;MA-Kat;MA-Kat_bez",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

@@ -1,0 +1,27 @@
+{
+	"name": "DemoFahrgaesteSink",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storecurated",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "DemoFahrgaeste"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "DemoFahrgaeste_Partitioned",
+				"fileSystem": "curated"
+			},
+			"columnDelimiter": ";",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

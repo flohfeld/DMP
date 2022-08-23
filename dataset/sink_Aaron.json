@@ -1,0 +1,21 @@
+{
+	"name": "sink_Aaron",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "swak8ddmpdev1-WorkspaceDefaultStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "sink_user/Aaron",
+				"fileSystem": "captured"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

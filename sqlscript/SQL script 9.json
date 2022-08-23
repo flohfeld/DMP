@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 9",
+	"properties": {
+		"content": {
+			"query": "Select BST_Nr,Zeus_Funktion_Bezeichnung\nfrom dbo.MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH where Stichtag = '2021-08-31'\ngroup by BST_Nr,Zeus_Funktion_Bezeichnung\n\n\n\nINSERT INTO dbo.MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH\n(Stichtag, STAMMKST, BST_NR, BST_NAME,ZEUS_FUNKTION_BEZEICHNUNG, BASISKENNZAHL_NAME, MENGENEINHEIT, WERTART, BEZUGSDATUM, WERT, LADELAUF_ID, FGUELTIG_VON, FGUELTIG_BIS)\nSELECT '2021-08-31' as Stichtag, STAMMKST, BST_NR, BST_NAME,ZEUS_FUNKTION_BEZEICHNUNG, BASISKENNZAHL_NAME, MENGENEINHEIT, 'Soll' as WERTART,\ndatefromparts(Year(Stichtag)+1, Month(Stichtag), '1') as BEZUGSDATUM, 0 AS WERT, 31 as LADELAUF_ID, '2021-08-31' as FGUELTIG_VON, '2199-12-31' as FGUELTIG_BIS  FROM dbo.MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH\n\nSELECT Stichtag, BST_Nr,Zeus_Funktion_Bezeichnung, BASISKENNZAHL_NAME, Wertart\nFROM (Select BST_Nr,Zeus_Funktion_Bezeichnung, BASISKENNZAHL_NAME, Wertart\nfrom dbo.MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH \nwhere Stichtag = '2021-08-31' and Wertart='Soll'\ngroup by BST_Nr,Zeus_Funktion_Bezeichnung, BASISKENNZAHL_NAME, Wertart AS a \nCROSS JOIN (Select distinct(Stichtag) from dbo.MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH) AS b\nEXCEPT\nSELECT Stichtag, BST_Nr,Zeus_Funktion_Bezeichnung, BASISKENNZAHL_NAME, Wertart from dbo.MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH \nwhere Wertart='Soll') as x",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "sqlpool1",
+				"poolName": "sqlpool1"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

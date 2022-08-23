@@ -1,0 +1,194 @@
+{
+	"name": "99 ExcelMagic",
+	"properties": {
+		"folder": {
+			"name": "dmp_examples"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "sparkpool0",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/0494c897-f1d8-40e6-802f-a5d7b636b9f0/resourceGroups/rsgk8ddmpdev1/providers/Microsoft.Synapse/workspaces/swak8ddmpdev1/bigDataPools/sparkpool0",
+				"name": "sparkpool0",
+				"type": "Spark",
+				"endpoint": "https://swak8ddmpdev1.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool0",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "2.4",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			}
+		},
+		"cells": [
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Vorbereitungen\r\n",
+					"\r\n",
+					"Der Spark Pool benötigt einige Pakete um direkt mit Excel Files arbeiten zu können.\r\n",
+					"\r\n",
+					"Anleitung: https://www.trivadis.com/de/magazine/azure-synapse-analytics-daten-einlesen\r\n",
+					"\r\n",
+					"Pakete: \r\n",
+					"\r\n",
+					"- https://mvnrepository.com/artifact/com.crealytics/spark-excel_2.11/0.13.7\r\n",
+					"- https://mvnrepository.com/artifact/org.apache.xmlbeans/xmlbeans/3.1.0\r\n",
+					"- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4/4.4\r\n",
+					"- https://mvnrepository.com/artifact/commons-codec/commons-codec/1.13\r\n",
+					"- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3/3.9\r\n",
+					"- https://mvnrepository.com/artifact/com.github.pjfanning/excel-streaming-reader/2.3.6\r\n",
+					"- https://mvnrepository.com/artifact/org.apache.commons/commons-compress/1.20\r\n",
+					"- https://mvnrepository.com/artifact/com.zaxxer/SparseBitSet/1.2\r\n",
+					"- https://mvnrepository.com/artifact/org.apache.commons/commons-math3/3.6.1\r\n",
+					"- https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml/4.1.2\r\n",
+					"- https://mvnrepository.com/artifact/org.apache.poi/poi/4.1.2\r\n",
+					"- https://mvnrepository.com/artifact/xml-apis/xml-apis/1.4.01\r\n",
+					"- https://mvnrepository.com/artifact/com.github.pjfanning/poi-shared-strings/1.0.4\r\n",
+					"- https://mvnrepository.com/artifact/com.h2database/h2/1.4.200\r\n",
+					"- https://mvnrepository.com/artifact/com.github.virtuald/curvesapi/1.06\r\n",
+					"- https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml-schemas/4.1.2\r\n",
+					"- https://mvnrepository.com/artifact/com.norbitltd/spoiwo_2.11/1.8.0\r\n",
+					"- https://mvnrepository.com/artifact/org.slf4j/slf4j-api/1.7.30\r\n",
+					"- https://mvnrepository.com/artifact/org.apache.commons/commons-text/1.8\r\n",
+					"- https://mvnrepository.com/artifact/org.scala-lang.modules/scala-xml_2.11/1.3.0\r\n",
+					"\r\n",
+					"Die Quelldateien müssen in einem DataLake Storage liegen.\r\n",
+					"\r\n",
+					""
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"\r\n",
+					"# Additional Modules\r\n",
+					"# https://www.trivadis.com/de/magazine/azure-synapse-analytics-daten-einlesen\r\n",
+					"\r\n",
+					"df = spark.read.format('com.crealytics.spark.excel').option('header', 'true').option('maxRowsInMemory', 20).load('abfss://curated@stak8ddmpdev1curated.dfs.core.windows.net/Einweisung/testexcel.xlsx')\r\n",
+					"df.show()\r\n",
+					""
+				],
+				"attachments": null,
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": true
+				},
+				"source": [
+					"# https://docs.microsoft.com/de-de/azure/synapse-analytics/quickstart-read-from-gen2-to-pandas-dataframe\r\n",
+					"pdf = df.toPandas()\r\n",
+					"print(pdf)"
+				],
+				"attachments": null,
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": true
+				},
+				"source": [
+					"from pyspark.sql import SparkSession\r\n",
+					"from pyspark.sql.types import *\r\n",
+					"\r\n",
+					"# Primary storage info\r\n",
+					"account_name = 'stak8ddmpdev1curated' # fill in your primary account name\r\n",
+					"container_name = 'curated' # fill in your container name\r\n",
+					"relative_path = 'Einweisung' # fill in your relative folder path\r\n",
+					"\r\n",
+					"adls_path = 'abfss://%s@%s.dfs.core.windows.net/%s' % (container_name, account_name, relative_path)\r\n",
+					"print('Primary storage account path: ' + adls_path)\r\n",
+					"\r\n",
+					"parquet_path = adls_path + 'excelmagic.parquet'\r\n",
+					"json_path = adls_path + 'excelmagic.json'\r\n",
+					"csv_path = adls_path + 'excelmagic.csv'\r\n",
+					"print('parquet file path: ' + parquet_path)\r\n",
+					"print('json file path�s ' + json_path)\r\n",
+					"print('csv file path: ' + csv_path)\r\n",
+					"\r\n",
+					"df.write.parquet(parquet_path, mode = 'overwrite')\r\n",
+					"df.write.json(json_path, mode = 'overwrite')\r\n",
+					"df.write.csv(csv_path, mode = 'overwrite', header = 'true')"
+				],
+				"attachments": null,
+				"execution_count": 7
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Mit dieser \r\n",
+					"\r\n",
+					"Spark basierten Lösung kann das datum-Zeit Problem des Excel - Moduls der Data Flows mitigiert wreden.  \r\n",
+					"\r\n",
+					""
+				],
+				"attachments": null
+			}
+		]
+	}
+}

@@ -1,0 +1,46 @@
+{
+	"name": "DebugTicket2174_Master",
+	"properties": {
+		"activities": [
+			{
+				"name": "DebugTicket2174_Part 1",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "DebugTicket2174_Part 1",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "DebugTicket2174_Part 2",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "DebugTicket2174_Part 1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "DebugTicket2174_Part 2",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "DebugTicket2174"
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-10-12T05:56:19Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

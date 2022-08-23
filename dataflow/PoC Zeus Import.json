@@ -1,0 +1,70 @@
+{
+	"name": "PoC Zeus Import",
+	"properties": {
+		"folder": {
+			"name": "ZEUS PoC"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ZEUS_INPUT1",
+						"type": "DatasetReference"
+					},
+					"name": "MIPDaten"
+				},
+				{
+					"dataset": {
+						"referenceName": "ZEUS_LOOKUP",
+						"type": "DatasetReference"
+					},
+					"name": "Lookup"
+				},
+				{
+					"dataset": {
+						"referenceName": "SQL_URLAUBSANSPRUCH",
+						"type": "DatasetReference"
+					},
+					"name": "DBDataTable"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SQL_URLAUBSANSPRUCH",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				}
+			],
+			"transformations": [
+				{
+					"name": "DerivedColumn1"
+				},
+				{
+					"name": "Filter1"
+				},
+				{
+					"name": "DBColumnMapping"
+				},
+				{
+					"name": "Lookup1"
+				},
+				{
+					"name": "DerivedColumn2"
+				},
+				{
+					"name": "DerivedColumn3"
+				},
+				{
+					"name": "Union1"
+				},
+				{
+					"name": "DerivedColumn4"
+				}
+			],
+			"script": "parameters{\n\tDF_LADELAUF_ID as decimal(10,0) (toDecimal(1,22,0))\n}\nsource(output(\n\t\tStichtag as date 'dd.MM.yyyy',\n\t\t{MA-KBST} as integer,\n\t\t{MA-RKOST} as integer,\n\t\t{BST-Nr} as integer,\n\t\t{BST-Name} as string,\n\t\tJobfamilie as string,\n\t\tJobfamilie_Bez as string,\n\t\t{Tätigkeitsgruppe} as short,\n\t\t{Tätigkeitsgruppe_Bez} as string,\n\t\t{Tätigkeitsdifferenzierung} as short,\n\t\t{Tätigkeitsdifferenzierung_bez} as string,\n\t\t{Urlaub-Soll-Gesamt} as short,\n\t\t{Urlaub-Restanspruch-Gesamt} as short,\n\t\t{MA-Kat} as string,\n\t\t{MA-Kat_bez} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> MIPDaten\nsource(output(\n\t\tZeus_funktion_id as integer,\n\t\tZeus_Funktion_Bezeichnung as string,\n\t\tTaetigkeitsID as integer,\n\t\tRKOST_NR as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> Lookup\nsource(output(\n\t\tSTICHTAG as date,\n\t\tSTAMMKST as decimal(11,0),\n\t\tBST_NR as decimal(6,0),\n\t\tBST_NAME as string,\n\t\tZEUS_FUNKTION_BEZEICHNUNG as string,\n\t\tBASISKENNZAHL_NAME as string,\n\t\tMENGENEINHEIT as string,\n\t\tWERTART as string,\n\t\tBEZUGSDATUM as date,\n\t\tWERT as integer,\n\t\tLADELAUF_ID as decimal(22,0),\n\t\tFGUELTIG_VON as date,\n\t\tFGUELTIG_BIS as date\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> DBDataTable\nLookup1 derive(BASISKENNZAHL_NAME = \"Urlaubsanspruch gesamt\",\n\t\tWERTART = \"IST\",\n\t\tWERT = 100) ~> DerivedColumn1\nMIPDaten filter({MA-Kat}!=\"P\") ~> Filter1\nUnion1 select(mapColumn(\n\t\tStichtag,\n\t\tSTAMMKST,\n\t\tBST_Nr = {BST-Nr},\n\t\tBST_Name = {BST-Name},\n\t\tZEUS_FUNKTION_BEZEICHNUNG = Zeus_Funktion_Bezeichnung,\n\t\tBASISKENNZAHL_NAME,\n\t\tMENGENEINHEIT,\n\t\tWERTART,\n\t\tBEZUGSDATUM = Stichtag,\n\t\tWERT,\n\t\tLADELAUF_ID,\n\t\tFGUELTIG_VON = Stichtag,\n\t\tFGUELTIG_BIS = Stichtag\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: false,\n\tskipDuplicateMapOutputs: false) ~> DBColumnMapping\nDerivedColumn2, Lookup lookup({MA-RKOST} == RKOST_NR\n\t&& {Tätigkeitsdifferenzierung} == TaetigkeitsID,\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> Lookup1\nFilter1 derive(STAMMKST = concat(toString({MA-KBST}), toString({MA-RKOST})),\n\t\tLADELAUF_ID = $DF_LADELAUF_ID,\n\t\tMENGENEINHEIT = \"Tage\") ~> DerivedColumn2\nLookup1 derive(BASISKENNZAHL_NAME = \"Urlaubsanspruch gesamt\",\n\t\tWERTART = \"Soll\",\n\t\tWERT = 200) ~> DerivedColumn3\nDerivedColumn3, DerivedColumn1, DerivedColumn4 union(byName: true)~> Union1\nLookup1 derive(BASISKENNZAHL_NAME = \"Urlaubsanspruch abgewickelt\",\n\t\tWERTART = \"IST\",\n\t\tWERT = 300) ~> DerivedColumn4\nDBColumnMapping sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tSTICHTAG as date,\n\t\tSTAMMKST as decimal(11,0),\n\t\tBST_NR as decimal(6,0),\n\t\tBST_NAME as string,\n\t\tZEUS_FUNKTION_BEZEICHNUNG as string,\n\t\tBASISKENNZAHL_NAME as string,\n\t\tMENGENEINHEIT as string,\n\t\tWERTART as string,\n\t\tBEZUGSDATUM as date,\n\t\tWERT as integer,\n\t\tLADELAUF_ID as decimal(22,0),\n\t\tFGUELTIG_VON as date,\n\t\tFGUELTIG_BIS as date\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: false,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tSTICHTAG = Stichtag,\n\t\tSTAMMKST,\n\t\tBST_NR = BST_Nr,\n\t\tBST_NAME = BST_Name,\n\t\tZEUS_FUNKTION_BEZEICHNUNG,\n\t\tBASISKENNZAHL_NAME,\n\t\tMENGENEINHEIT,\n\t\tWERTART,\n\t\tBEZUGSDATUM,\n\t\tWERT,\n\t\tLADELAUF_ID,\n\t\tFGUELTIG_VON,\n\t\tFGUELTIG_BIS\n\t)) ~> sink2"
+		}
+	}
+}

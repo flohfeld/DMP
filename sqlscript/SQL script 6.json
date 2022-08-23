@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 6",
+	"properties": {
+		"content": {
+			"query": "SELECT Count(*) anz_rs, Wertart, Ladelauf_id\n FROM [dbo].[MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH]\n Where Stichtag = '2021-08-31'\n group by Wertart, ladelauf_id\n\nSELECT Count(*) anz_rs, Stichtag\n FROM [dbo].[MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH]\n group by Stichtag\n\nSELECT * , datepart(\"yyyy\", Stichtag)\n FROM [dbo].[MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH]\n Where Stichtag > '2021-12-01'\n\n SELECT stichtag, datefromparts(Year(Stichtag)+1, Month(Stichtag), '1')\n FROM [dbo].[MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH]\n Where Stichtag > '2021-08-01'\n\n  SELECT stichtag, dateadd(\"mm\",-11,Stichtag)\n FROM [dbo].[MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH]\n Where Stichtag > '2021-08-01'\n\n Select Ladelauf_id, wertart, Zeus_funktion_bezeichnung, Bezugsdatum \n  FROM [dbo].[MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH]\n Where Stichtag = '2021-08-31'\n Order by Wertart, Zeus_funktion_bezeichnung, Bezugsdatum\n\n Select *\n  FROM [dbo].[MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH]\n Where Stichtag = '2021-08-31' and WErtart='Soll'\n Order by Wertart, Zeus_funktion_bezeichnung, Bezugsdatum\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "sqlpool1",
+				"poolName": "sqlpool1"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

@@ -1,0 +1,264 @@
+{
+	"name": "02 Cockpit-Netcool-Alerts-Examples",
+	"properties": {
+		"activities": [
+			{
+				"name": "SetTimestamp",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "tmp_timestamp",
+					"value": {
+						"value": "@formatDateTime(pipeline().TriggerTime, 'yyyy-MM-dd\"T\"hh:mm:ss\".000000000\"zzz')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "NetcoolSetRedCritical",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "SetTimestamp",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://probe-mb-iat.zmon.comp.db.de:8443/probe/webhook",
+					"connectVia": {
+						"referenceName": "ComputeNetRuntime1",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"value": "{\"receiver\":\"netcool-test\",\"alerts\":[{\"status\":\"firing\",\"labels\":{\"account_id\":\"0bbc6bcc-c76e-4f4c-ac78-3a068a3b3446\",\"alarm_group\":\"basic\",\"alertname\":\"OverallServicestatus\",\"application\":\"dmpcore-Entw\",\"env\":\"4\",\"node\":\"service\",\"severity\":\"critical\",\"sys_app_type\":\"1\"},\"annotations\":{\"summary\":\"Dies ist ein Testevent. Bitte ignorieren!\"},\"startsAt\":\"2021-05-21T13:20:34.375323349Z\"}]}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "NetcoolSetYellowWarning",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "SetTimestamp_copy2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://probe-mb-iat.zmon.comp.db.de:8443/probe/webhook",
+					"connectVia": {
+						"referenceName": "ComputeNetRuntime1",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"value": "{\"receiver\":\"netcool-test\",\"alerts\":[{\"status\":\"firing\",\"labels\":{\"account_id\":\"0bbc6bcc-c76e-4f4c-ac78-3a068a3b3446\",\"alarm_group\":\"basic\",\"alertname\":\"OverallServicestatus\",\"application\":\"dmpcore-Entw\",\"env\":\"4\",\"node\":\"service\",\"severity\":\"warning\",\"sys_app_type\":\"1\"},\"annotations\":{\"summary\":\"Dies ist ein Testevent. Bitte ignorieren!\"},\"startsAt\":\"2021-05-21T13:30:34.375323349Z\"}]}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "NetcoolSetPurpleInfo",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "SetTimestamp_copy3",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://probe-mb-iat.zmon.comp.db.de:8443/probe/webhook",
+					"connectVia": {
+						"referenceName": "ComputeNetRuntime1",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"value": "{\"receiver\":\"netcool-test\",\"alerts\":[{\"status\":\"firing\",\"labels\":{\"account_id\":\"0bbc6bcc-c76e-4f4c-ac78-3a068a3b3446\",\"alarm_group\":\"basic\",\"alertname\":\"OverallServicestatus\",\"application\":\"dmpcore-Entw\",\"env\":\"4\",\"node\":\"service\",\"severity\":\"information\",\"sys_app_type\":\"1\"},\"annotations\":{\"summary\":\"Dies ist ein Testevent. Bitte ignorieren!\"},\"startsAt\":\"2021-05-21T13:40:34.375323349Z\"}]}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "NetcoolResolveRedCritical",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "SetTimestamp_copy1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://probe-mb-iat.zmon.comp.db.de:8443/probe/webhook",
+					"connectVia": {
+						"referenceName": "ComputeNetRuntime1",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"value": "{\"receiver\":\"netcool-test\",\"alerts\":[{\"status\":\"resolved\",\"labels\":{\"account_id\":\"0bbc6bcc-c76e-4f4c-ac78-3a068a3b3446\",\"alarm_group\":\"basic\",\"alertname\":\"OverallServicestatus\",\"application\":\"dmpcore-Entw\",\"env\":\"4\",\"node\":\"service\",\"severity\":\"critical\",\"sys_app_type\":\"1\"},\"annotations\":{\"summary\":\"Dies ist ein Testevent. Bitte ignorieren!\"},\"startsAt\":\"2021-05-21T13:21:34.375323349Z\"}]}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Wait30s",
+				"type": "Wait",
+				"dependsOn": [
+					{
+						"activity": "NetcoolSetRedCritical",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 30
+				}
+			},
+			{
+				"name": "Wait30s_copy1",
+				"type": "Wait",
+				"dependsOn": [
+					{
+						"activity": "NetcoolResolveRedCritical",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 30
+				}
+			},
+			{
+				"name": "Wait30s_copy2",
+				"type": "Wait",
+				"dependsOn": [
+					{
+						"activity": "NetcoolSetYellowWarning",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 30
+				}
+			},
+			{
+				"name": "SetTimestamp_copy1",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "tmp_timestamp",
+					"value": {
+						"value": "@formatDateTime(pipeline().TriggerTime, 'yyyy-MM-dd\"T\"hh:mm:ss\".000000000\"zzz')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "SetTimestamp_copy2",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "tmp_timestamp",
+					"value": {
+						"value": "@formatDateTime(pipeline().TriggerTime, 'yyyy-MM-dd\"T\"hh:mm:ss\".000000000\"zzz')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "SetTimestamp_copy3",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "tmp_timestamp",
+					"value": {
+						"value": "@formatDateTime(pipeline().TriggerTime, 'yyyy-MM-dd\"T\"hh:mm:ss\".000000000\"zzz')",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"tmp_timestamp": {
+				"type": "String"
+			},
+			"tmp_message": {
+				"type": "String"
+			},
+			"var_message": {
+				"type": "Array"
+			}
+		},
+		"folder": {
+			"name": "dmp_examples"
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-09-27T08:04:56Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

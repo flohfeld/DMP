@@ -1,0 +1,37 @@
+{
+	"name": "PocZeusLandingBinary",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storelanding",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Directory": {
+				"type": "string"
+			},
+			"Filename": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "PoC_ZEUS"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().Filename",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().Directory",
+					"type": "Expression"
+				},
+				"fileSystem": "landing"
+			}
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

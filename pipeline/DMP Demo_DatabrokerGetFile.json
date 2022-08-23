@@ -1,0 +1,469 @@
+{
+	"name": "DMP Demo_DatabrokerGetFile",
+	"properties": {
+		"activities": [
+			{
+				"name": "GetFirstFile",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "tmp_file_id",
+					"value": {
+						"value": "@pipeline().parameters.par_file_id",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "GetNewToken",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "GetClientSecretInLoop",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "GetClientIdInLoop",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": true
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://auth.businesshub.deutschebahn.com/auth/realms/data-broker/protocol/openid-connect/token",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					"body": {
+						"value": "@concat(\n'client_id=', \nactivity('GetClientIdInLoop').output.value, \n'&scope=datasources&client_secret=', \nactivity('GetClientSecretInLoop').output.value, \n'&grant_type=client_credentials'\n)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "RequestAndStore",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "TestIfTokenNeedsRenewal",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"additionalHeaders": {
+							"Authorization": {
+								"value": "Bearer @{variables('access_token')}",
+								"type": "Expression"
+							}
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings",
+							"maxConcurrentConnections": 1
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DBFilesApi",
+						"type": "DatasetReference",
+						"parameters": {
+							"fileid": {
+								"value": "@variables('tmp_file_id')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DMPFilesDrop_test",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "SetError",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "RequestAndStore",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "TestIfToken2",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "RequestAndStore_copy1",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "error_occured",
+					"value": true
+				}
+			},
+			{
+				"name": "TestIfTokenNeedsRenewal",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "GetBearer",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "https://databroker.service.deutschebahn.com/api/files-api/v1/files/@{variables('tmp_file_id')}/meta",
+						"type": "Expression"
+					},
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "GET",
+					"headers": {
+						"Authorization": {
+							"value": "Bearer @{variables('access_token')}",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "UpdateAccessToken",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "GetNewToken",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "access_token",
+					"value": {
+						"value": "@{activity('GetNewToken').output.access_token}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "SetError_nofile",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "GetFirstFile",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "error_occured",
+					"value": true
+				}
+			},
+			{
+				"name": "GetClientIdInLoop",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "TestIfTokenNeedsRenewal",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://akvk8ddmpdev1user.vault.azure.net/secrets/databroker-client-id/6b417715c410472ab135d90cbf5fec61?api-version=7.0",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "GetClientSecretInLoop",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "TestIfTokenNeedsRenewal",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://akvk8ddmpdev1user.vault.azure.net/secrets/databroker-client-secret/2479372d982542f2af43502ca90d0227?api-version=7.0",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "TestIfToken2",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "UpdateAccessToken",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "https://databroker.service.deutschebahn.com/api/files-api/v1/files/@{variables('tmp_file_id')}/meta",
+						"type": "Expression"
+					},
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "GET",
+					"headers": {
+						"Authorization": {
+							"value": "Bearer @{variables('access_token')}",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "RequestAndStore_copy1",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "TestIfToken2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"additionalHeaders": {
+							"Authorization": {
+								"value": "Bearer @{variables('access_token')}",
+								"type": "Expression"
+							}
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings",
+							"maxConcurrentConnections": 1
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DBFilesApi",
+						"type": "DatasetReference",
+						"parameters": {
+							"fileid": {
+								"value": "@variables('tmp_file_id')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DMPFilesDrop_test",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "GetBearer",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "GetFirstFile",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "access_token",
+					"value": {
+						"value": "@pipeline().parameters.par_access_token",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"par_file_id": {
+				"type": "string",
+				"defaultValue": "no_file"
+			},
+			"par_access_token": {
+				"type": "string",
+				"defaultValue": "no_token"
+			}
+		},
+		"variables": {
+			"access_token": {
+				"type": "String",
+				"defaultValue": "SYSTEM"
+			},
+			"tmp_file_list": {
+				"type": "Array"
+			},
+			"tmp_file_id": {
+				"type": "String",
+				"defaultValue": "SYSTEM"
+			},
+			"error_occured": {
+				"type": "Boolean",
+				"defaultValue": false
+			},
+			"tmp_file_list_2": {
+				"type": "Array"
+			},
+			"data_source_id": {
+				"type": "String",
+				"defaultValue": "b97a4f89-9af9-4d9d-8958-6e78005ab489"
+			},
+			"date_from": {
+				"type": "String",
+				"defaultValue": "2019-09-07"
+			},
+			"date_to": {
+				"type": "String"
+			},
+			"tmp_next_token": {
+				"type": "String",
+				"defaultValue": "SYSTEM"
+			},
+			"tmp_next_token_first_iteration": {
+				"type": "String",
+				"defaultValue": "true"
+			},
+			"Test": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "TB"
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-10-04T11:24:43Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

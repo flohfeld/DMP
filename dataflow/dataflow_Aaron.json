@@ -1,0 +1,87 @@
+{
+	"name": "dataflow_Aaron",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "source_Aaron",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "sink_Aaron",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "select1"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Prop_0 as string,",
+				"          VendorID as string,",
+				"          lpep_pickup_datetime as string,",
+				"          lpep_dropoff_datetime as string,",
+				"          store_and_fwd_flag as string,",
+				"          RatecodeID as string,",
+				"          PULocationID as string,",
+				"          DOLocationID as string,",
+				"          passenger_count as string,",
+				"          trip_distance as string,",
+				"          fare_amount as string,",
+				"          extra as string,",
+				"          mta_tax as string,",
+				"          tip_amount as string,",
+				"          tolls_amount as string,",
+				"          ehail_fee as string,",
+				"          improvement_surcharge as string,",
+				"          total_amount as string,",
+				"          payment_type as string,",
+				"          trip_type as string,",
+				"          congestion_surcharge as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 select(mapColumn(",
+				"          VendorID,",
+				"          lpep_pickup_datetime,",
+				"          lpep_dropoff_datetime,",
+				"          passenger_count,",
+				"          trip_distance,",
+				"          total_amount,",
+				"          payment_type,",
+				"          trip_type",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 derive(pickupMonth = month(toTimestamp(lpep_pickup_datetime)),",
+				"     partitionBy('key',",
+				"          0,",
+				"          pickupMonth",
+				"     )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
+			]
+		}
+	}
+}

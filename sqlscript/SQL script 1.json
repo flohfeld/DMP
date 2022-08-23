@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 1",
+	"properties": {
+		"content": {
+			"query": "DROP PROCEDURE [dbo].[Test]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE PROC [dbo].[Test] @Anzahl_DS INT OUTPUT\nAS\nBEGIN\n    DECLARE @SQLString NVARCHAR(500);  \n    DECLARE @ParmDefinition NVARCHAR(500);  \n    DECLARE @count_variable INT;\n\nSET @SQLString = 'SELECT @count_variable=Max(Ladelauf_id)  from [dbo].[MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH]';  \nSET @ParmDefinition = '@count_variable INT OUTPUT';  \nEXECUTE sp_executesql @SQLString, @ParmDefinition,  @count_variable=@count_variable OUTPUT; \nSET @Anzahl_DS= @count_variable\n\nEND\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "sqlpool1",
+				"poolName": "sqlpool1"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

@@ -1,0 +1,26 @@
+{
+	"name": "binanceTarget",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storecaptured",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "binance"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"container": "binance"
+			},
+			"columnDelimiter": ";",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

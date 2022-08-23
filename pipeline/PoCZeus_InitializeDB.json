@@ -1,0 +1,261 @@
+{
+	"name": "PoCZeus_InitializeDB",
+	"properties": {
+		"activities": [
+			{
+				"name": "Eingangsdateien listen",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ProcessedGetMetadataDataset",
+						"type": "DatasetReference",
+						"parameters": {
+							"SourceContainer": {
+								"value": "@pipeline().parameters.SourceStore_Location",
+								"type": "Expression"
+							},
+							"SourceDirectory": {
+								"value": "@pipeline().parameters.SourceStore_Directory",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Nur Dateien",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "SET Ladelauf_id",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Nur Dateien').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "SQL SP ImportUrlaub",
+							"type": "SqlPoolStoredProcedure",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"sqlPool": {
+								"referenceName": "sqlpool1",
+								"type": "SqlPoolReference"
+							},
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[SP_ImportUrlaub]",
+								"storedProcedureParameters": {
+									"Filename": {
+										"value": {
+											"value": "@item().name",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"Ladelauf_ID": {
+										"value": {
+											"value": "@variables('PIP_LADELAUF_ID_NEXT')",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Nur Dateien",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "Eingangsdateien listen",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Eingangsdateien listen').output.childItems",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@equals(item().type, 'File')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "SET Ladelauf_id",
+				"description": "Wenn Parameter Ladelauf_ID = -1, dann wird der Wert automatisch ermittelt",
+				"type": "IfCondition",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(pipeline().parameters.Ladelauf_ID,-1)",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "SET NEXT LAUF ID Static",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "PIP_LADELAUF_ID_NEXT",
+								"value": {
+									"value": "@pipeline().parameters.Ladelauf_ID",
+									"type": "Expression"
+								}
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "DF_Get_Load_ID_SP",
+							"type": "ExecuteDataFlow",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "1.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataflow": {
+									"referenceName": "PoC Zeus Get Max Ladelauf_ID_SP",
+									"type": "DataFlowReference"
+								},
+								"compute": {
+									"coreCount": 8,
+									"computeType": "General"
+								},
+								"traceLevel": "None",
+								"cacheSinks": {
+									"firstRowOnly": true
+								}
+							}
+						},
+						{
+							"name": "Get Current Lauf ID",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "DF_Get_Load_ID_SP",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "PIP_LADELAUF_ID_LAST",
+								"value": {
+									"value": "@string(activity('DF_Get_Load_ID_SP').output.runStatus.output.sink1.value[0].LADELAUF_ID)",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "SET NEXT LAUF ID as Increment",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Get Current Lauf ID",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "PIP_LADELAUF_ID_NEXT",
+								"value": {
+									"value": "@string(add(int(variables('PIP_LADELAUF_ID_LAST')),1))",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"SourceStore_Location": {
+				"type": "string",
+				"defaultValue": "/processed"
+			},
+			"SourceStore_Directory": {
+				"type": "string",
+				"defaultValue": "/PocZeus/Ist"
+			},
+			"Ladelauf_ID": {
+				"type": "string",
+				"defaultValue": "10"
+			}
+		},
+		"variables": {
+			"PIP_LADELAUF_ID_LAST": {
+				"type": "String",
+				"defaultValue": "-1"
+			},
+			"PIP_LADELAUF_ID_NEXT": {
+				"type": "String",
+				"defaultValue": "-1"
+			}
+		},
+		"folder": {
+			"name": "PoC Zeus"
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-11-14T14:37:18Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

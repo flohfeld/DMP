@@ -1,0 +1,20 @@
+{
+	"name": "RestResource",
+	"properties": {
+		"description": "Connection to your REST/HTTP",
+		"linkedServiceName": {
+			"referenceName": "RESTTest_Postman",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"Testparam1": "Testvalue"
+			}
+		},
+		"folder": {
+			"name": "postman"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

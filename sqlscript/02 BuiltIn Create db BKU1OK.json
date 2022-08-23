@@ -1,0 +1,20 @@
+{
+	"name": "02 BuiltIn Create db BKU1OK",
+	"properties": {
+		"folder": {
+			"name": "dmp_examples"
+		},
+		"content": {
+			"query": "CREATE DATABASE k8ddemodb\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "default",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

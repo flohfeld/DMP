@@ -1,0 +1,127 @@
+{
+	"name": "PoCZeus_Import",
+	"properties": {
+		"activities": [
+			{
+				"name": "DF_Get_Load_ID",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "PoC Zeus Get Max Ladelauf_ID",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			},
+			{
+				"name": "Get Current Lauf ID",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "DF_Get_Load_ID",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "PIP_LADELAUF_ID_LAST",
+					"value": {
+						"value": "@string(activity('DF_Get_Load_ID').output.runStatus.output.sink1.value[0].LADELAUF_ID)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "SET NEXT LAUF ID",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Get Current Lauf ID",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "PIP_LADELAUF_ID_NEXT",
+					"value": {
+						"value": "@string(add(int(variables('PIP_LADELAUF_ID_LAST')),1))",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "DF_Import Data",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "SET NEXT LAUF ID",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "PoC Zeus Import",
+						"type": "DataFlowReference",
+						"parameters": {
+							"DF_LADELAUF_ID": {
+								"value": "@variables('PIP_LADELAUF_ID_NEXT')",
+								"type": "Expression"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"variables": {
+			"PIP_LADELAUF_ID_LAST": {
+				"type": "String",
+				"defaultValue": "-1"
+			},
+			"PIP_LADELAUF_ID_NEXT": {
+				"type": "String",
+				"defaultValue": "-1"
+			}
+		},
+		"folder": {
+			"name": "PoC Zeus"
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-11-13T15:01:29Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

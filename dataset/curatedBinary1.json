@@ -1,0 +1,19 @@
+{
+	"name": "curatedBinary1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storecurated",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "PocZeus/ToProcess/Ist",
+				"fileSystem": "curated"
+			}
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

@@ -1,0 +1,60 @@
+{
+	"name": "DelimitedText5",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storeprocessed",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "einweisung"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "PersonendatenNeu.csv",
+				"fileSystem": "processed"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Zugnr",
+				"type": "String"
+			},
+			{
+				"name": "Station",
+				"type": "String"
+			},
+			{
+				"name": "Einsteiger",
+				"type": "String"
+			},
+			{
+				"name": "Aussteiger",
+				"type": "String"
+			},
+			{
+				"name": "dtmIstAnkunftDatum",
+				"type": "String"
+			},
+			{
+				"name": "dtmIstAbfahrtDatum",
+				"type": "String"
+			},
+			{
+				"name": "DS100 kurz",
+				"type": "String"
+			},
+			{
+				"name": "strKurzbezeichnung",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

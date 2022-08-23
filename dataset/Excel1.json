@@ -1,0 +1,47 @@
+{
+	"name": "Excel1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storecurated",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "einweisung"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"sheetName": "Tabelle1",
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "testexcel.xlsx",
+				"folderPath": "Einweisung",
+				"fileSystem": "curated"
+			},
+			"firstRowAsHeader": true
+		},
+		"schema": [
+			{
+				"name": "MeinDatum",
+				"type": "String"
+			},
+			{
+				"name": "MeineUhrzeit",
+				"type": "String"
+			},
+			{
+				"name": "MeinText",
+				"type": "String"
+			},
+			{
+				"name": "MeinZeitstempel",
+				"type": "String"
+			},
+			{
+				"name": "MeineFormel",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

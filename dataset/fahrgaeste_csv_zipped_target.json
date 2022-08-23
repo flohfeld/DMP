@@ -1,0 +1,65 @@
+{
+	"name": "fahrgaeste_csv_zipped_target",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storecaptured",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "DemoFahrgaeste"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "DemoFahrgaeste",
+				"fileSystem": "captured"
+			},
+			"columnDelimiter": ";",
+			"compressionCodec": "gzip",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Zugnr",
+				"type": "String"
+			},
+			{
+				"name": "Station",
+				"type": "String"
+			},
+			{
+				"name": "Einsteiger",
+				"type": "String"
+			},
+			{
+				"name": "Aussteiger",
+				"type": "String"
+			},
+			{
+				"name": "dtmIstAnkunftDatum",
+				"type": "String"
+			},
+			{
+				"name": "dtmIstAbfahrtDatum",
+				"type": "String"
+			},
+			{
+				"name": "DS100 kurz",
+				"type": "String"
+			},
+			{
+				"name": "strKurzbezeichnung",
+				"type": "String"
+			},
+			{
+				"name": "Z�hler",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

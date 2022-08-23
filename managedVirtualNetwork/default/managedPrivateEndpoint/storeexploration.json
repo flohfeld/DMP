@@ -1,0 +1,10 @@
+{
+	"name": "storeexploration",
+	"properties": {
+		"privateLinkResourceId": "/subscriptions/0494c897-f1d8-40e6-802f-a5d7b636b9f0/resourceGroups/rsgk8ddmpdev1/providers/Microsoft.Storage/storageAccounts/stak8ddmpdev1exploration",
+		"groupId": "dfs",
+		"fqdns": [
+			"stak8ddmpdev1exploration.dfs.core.windows.net"
+		]
+	}
+}

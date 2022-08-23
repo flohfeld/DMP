@@ -1,0 +1,176 @@
+{
+	"name": "03 Read and write from SQL pool table",
+	"properties": {
+		"folder": {
+			"name": "dmp_examples"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "sparkpool0",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 1,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "1",
+				"spark.dynamicAllocation.maxExecutors": "1"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"kernelspec": {
+				"name": "synapse_spark",
+				"display_name": "Synapse Spark"
+			},
+			"language_info": {
+				"name": "scala"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/0494c897-f1d8-40e6-802f-a5d7b636b9f0/resourceGroups/rsgk8ddmpdev1/providers/Microsoft.Synapse/workspaces/swak8ddmpdev1/bigDataPools/sparkpool0",
+				"name": "sparkpool0",
+				"type": "Spark",
+				"endpoint": "https://swak8ddmpdev1.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool0",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "2.4",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			}
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": true
+				},
+				"source": [
+					""
+				],
+				"attachments": null,
+				"execution_count": null
+			},
+			{
+				"cell_type": "markdown",
+				"source": [
+					"## Load a sample data\n",
+					"\n",
+					"Let's first load the [Public Holidays](https://azure.microsoft.com/en-us/services/open-datasets/catalog/public-holidays/) of last 6 months from Azure Open datasets as a sample.\n",
+					""
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"microsoft": {
+						"language": "python"
+					}
+				},
+				"source": [
+					"%%pyspark \n",
+					"# Load sample data from azure open dataset in pyspark\n",
+					"from azureml.opendatasets import PublicHolidays\n",
+					"\n",
+					"from datetime import datetime\n",
+					"from dateutil import parser\n",
+					"from dateutil.relativedelta import relativedelta\n",
+					"\n",
+					"\n",
+					"end_date = datetime.today()\n",
+					"start_date = datetime.today() - relativedelta(months=6)\n",
+					"hol = PublicHolidays(start_date=start_date, end_date=end_date)\n",
+					"hol_df = hol.to_spark_dataframe()\n",
+					"\n",
+					"print('Register the DataFrame as a SQL temporary view: source')\n",
+					"hol_df.createOrReplaceTempView('source')"
+				],
+				"attachments": null,
+				"execution_count": 13
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"// Remove datetime from the data source\n",
+					"val holiday_nodate = spark.sql(\"SELECT countryOrRegion, holidayName, normalizeHolidayName,isPaidTimeOff,countryRegionCode FROM source\")\n",
+					"holiday_nodate.show(5,truncate = false)"
+				],
+				"attachments": null,
+				"execution_count": 14
+			},
+			{
+				"cell_type": "markdown",
+				"source": [
+					"## Write a Spark dataframe into your sql pool\n",
+					""
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"// Write the dataframe into your sql pool\n",
+					"import org.apache.spark.sql.SqlAnalyticsConnector._\n",
+					"import com.microsoft.spark.sqlanalytics.utils.Constants\n",
+					"\n",
+					"val sql_pool_name = \"sqlpool1\" //fill in your sql pool name\n",
+					"\n",
+					"holiday_nodate.write.synapsesql(s\"$sql_pool_name.dbo.PublicHoliday\", Constants.INTERNAL)\n",
+					""
+				],
+				"attachments": null,
+				"execution_count": 15
+			},
+			{
+				"cell_type": "markdown",
+				"source": [
+					"Now open Synapse object explorer and go to **Data**->**Databases**->**<your sql pool name>**->**Tables**, you will see the new **dbo.PublicHoliday** table show up there."
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "markdown",
+				"source": [
+					"## Read from a SQL Pool table with Spark\n",
+					"\n",
+					""
+				],
+				"attachments": null
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"// Read  the table we just created in the sql pool as a Spark dataframe\n",
+					"val spark_read = spark.read.\n",
+					"    sqlanalytics(s\"$sql_pool_name.dbo.PublicHoliday\")\n",
+					"spark_read.show(5, truncate = false)"
+				],
+				"attachments": null,
+				"execution_count": 16
+			}
+		]
+	}
+}

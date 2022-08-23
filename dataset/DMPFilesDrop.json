@@ -1,0 +1,27 @@
+{
+	"name": "DMPFilesDrop",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storelanding",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "databroker"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@{variables('tmp_file_id')}",
+					"type": "Expression"
+				},
+				"folderPath": "Databroker",
+				"fileSystem": "landing"
+			}
+		},
+		"schema": {}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

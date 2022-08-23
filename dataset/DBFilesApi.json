@@ -1,0 +1,27 @@
+{
+	"name": "DBFilesApi",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DBDataBroker",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"fileid": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "databroker"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat('/api/files-api/v1/files/',dataset().fileid)",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

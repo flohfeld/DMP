@@ -1,0 +1,19 @@
+{
+	"name": "processedBinary",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storeprocessed",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "PocZeus/Temp/InputFile",
+				"fileSystem": "processed"
+			}
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

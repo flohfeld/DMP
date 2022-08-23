@@ -1,0 +1,67 @@
+{
+	"name": "PoC Zeus Regelverarbeitung",
+	"properties": {
+		"folder": {
+			"name": "ZEUS PoC"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "PocZeusRVMipUrlaub",
+						"type": "DatasetReference"
+					},
+					"name": "Urlaubsdaten"
+				},
+				{
+					"dataset": {
+						"referenceName": "ZEUS_LOOKUP",
+						"type": "DatasetReference"
+					},
+					"name": "LookUp"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "PocZeusProcessedRVResult",
+						"type": "DatasetReference"
+					},
+					"name": "sink1",
+					"description": "Zielverzeichnis aus $Target_Dir"
+				}
+			],
+			"transformations": [
+				{
+					"name": "Filter1"
+				},
+				{
+					"name": "Lookup1"
+				},
+				{
+					"name": "Select1"
+				},
+				{
+					"name": "ErmittleIst"
+				},
+				{
+					"name": "UrlaubGesamt"
+				},
+				{
+					"name": "UrlaubAbgewickelt"
+				},
+				{
+					"name": "ZielformatClone1"
+				},
+				{
+					"name": "Union1"
+				},
+				{
+					"name": "DerivedColumn1"
+				}
+			],
+			"script": "parameters{\n\tTARGET_DIR as string (\"PocZeus/Regelverarbeitung/\")\n}\nsource(output(\n\t\tStichtag as date 'dd.MM.yyyy',\n\t\t{MA-KBST} as integer,\n\t\t{MA-RKOST} as integer,\n\t\t{BST-Nr} as integer,\n\t\t{BST-Name} as string,\n\t\tJobfamilie as short,\n\t\tJobfamilie_Bez as string,\n\t\t{Tätigkeitsgruppe} as short,\n\t\t{Tätigkeitsgruppe_Bez} as string,\n\t\t{Tätigkeitsdifferenzierung} as short,\n\t\t{Tätigkeitsdifferenzierung_bez} as string,\n\t\t{Urlaub-Soll-Gesamt} as short,\n\t\t{Urlaub-Restanspruch-Gesamt} as short,\n\t\t{MA-Kat} as string,\n\t\t{MA-Kat_bez} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> Urlaubsdaten\nsource(output(\n\t\tZeus_funktion_id as short,\n\t\tZeus_Funktion_Bezeichnung as string,\n\t\tTaetigkeitsID as short,\n\t\tRKOST_NR as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> LookUp\nUrlaubsdaten filter({MA-Kat}!='P') ~> Filter1\nFilter1, LookUp lookup({MA-RKOST} == RKOST_NR\n\t&& {Tätigkeitsdifferenzierung} == TaetigkeitsID,\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> Lookup1\nErmittleIst select(mapColumn(\n\t\tStichtag,\n\t\tSTAMMKST,\n\t\t{BST-Nr},\n\t\t{BST-Name},\n\t\tZeus_Funktion_Bezeichnung,\n\t\tMengeneinheit,\n\t\tWertart,\n\t\tBezugsdatum_Ist,\n\t\tBezugsdatum_Soll,\n\t\t{Urlaub-Soll-Gesamt},\n\t\t{Urlaub-Restanspruch-Gesamt},\n\t\tUrlaubsanspruch_Ist,\n\t\tUrlaubsanspruch_abgewickelt_Ist,\n\t\tFGueltig_Von,\n\t\tBezugsdatum\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nLookup1 derive(Urlaubsanspruch_Ist = {Urlaub-Soll-Gesamt},\n\t\tUrlaubsanspruch_abgewickelt_Ist = {Urlaub-Soll-Gesamt}-{Urlaub-Restanspruch-Gesamt},\n\t\tBezugsdatum_Ist = Stichtag,\n\t\tBezugsdatum_Soll = toDate('01.' + toString(month(Stichtag)) + '.' + toString(year(Stichtag)),'dd.MM.yyyy'),\n\t\tBezugsdatum = Stichtag,\n\t\tWertart = \"IST\",\n\t\tFGueltig_Von = Stichtag,\n\t\tSTAMMKST = concat(toString({MA-KBST}), toString({MA-RKOST})),\n\t\tMengeneinheit = \"Zeit [d]\") ~> ErmittleIst\nSelect1 derive(WERT = Urlaubsanspruch_Ist,\n\t\tBASISKENNZAHL_NAME = \"URLAUBGESAMT\") ~> UrlaubGesamt\nSelect1 derive(WERT = Urlaubsanspruch_abgewickelt_Ist,\n\t\tBASISKENNZAHL_NAME = \"URLAUBABGEWICKELT\") ~> UrlaubAbgewickelt\nUnion1 select(mapColumn(\n\t\tStichtag,\n\t\tSTAMMKST,\n\t\t{BST-Nr},\n\t\t{BST-Name},\n\t\tZeus_Funktion_Bezeichnung,\n\t\tBASISKENNZAHL_NAME,\n\t\tMengeneinheit,\n\t\tWertart,\n\t\tBezugsdatum,\n\t\tWERT,\n\t\tFGueltig_Von\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> ZielformatClone1\nUrlaubAbgewickelt, UrlaubGesamt union(byName: true)~> Union1\nZielformatClone1 derive(FILENAME = $TARGET_DIR + \"MIPUrlaubIst\" + toString(Stichtag,\"yyyyMMdd\") + \".csv\") ~> DerivedColumn1\nDerivedColumn1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\t{Stichtag;MA-KBST;MA-RKOST;BST-Nr;BST-Name;Jobfamilie;Jobfamilie_Bez;Tätigkeitsgruppe;Tätigkeitsgruppe_Bez;Tätigkeitsdifferenzierung;Tätigkeitsdifferenzierung_bez;Urlaub-Soll-Gesamt;Urlaub-Restanspruch-Gesamt;MA-Kat;MA-Kat_bez} as string\n\t),\n\trowUrlColumn:'FILENAME',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tsaveOrder: 1) ~> sink1"
+		}
+	}
+}

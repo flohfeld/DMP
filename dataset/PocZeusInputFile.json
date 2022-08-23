@@ -1,0 +1,23 @@
+{
+	"name": "PocZeusInputFile",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storeprocessed",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "PoC_ZEUS"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "MipUrlaub.csv",
+				"folderPath": "PocZeus/Temp/InputFile",
+				"fileSystem": "processed"
+			}
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

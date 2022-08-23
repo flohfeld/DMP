@@ -1,0 +1,45 @@
+{
+	"name": "Test Get Result from SP",
+	"properties": {
+		"activities": [
+			{
+				"name": "SQL pool stored procedure1",
+				"type": "SqlPoolStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"sqlPool": {
+					"referenceName": "sqlpool1",
+					"type": "SqlPoolReference"
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[Test]",
+					"storedProcedureParameters": {
+						"Anzahl_DS": {
+							"value": {
+								"value": "@variables('Test_Res')",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						}
+					}
+				}
+			}
+		],
+		"variables": {
+			"Test_Res": {
+				"type": "String",
+				"defaultValue": "0"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-11-13T15:17:39Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

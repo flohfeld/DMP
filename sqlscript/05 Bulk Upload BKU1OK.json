@@ -1,0 +1,20 @@
+{
+	"name": "05 Bulk Upload BKU1OK",
+	"properties": {
+		"folder": {
+			"name": "dmp_examples"
+		},
+		"content": {
+			"query": "IF NOT EXISTS (SELECT * FROM sys.objects O JOIN sys.schemas S ON O.schema_id = S.schema_id WHERE O.NAME = 'dmpstandardverifys' AND O.TYPE = 'U' AND S.NAME = 'dbo')\nCREATE TABLE [dbo].[dmpstandardverifys]\n\t(\n\t [C1] nvarchar(4000),\n\t [C2] nvarchar(4000),\n\t [C3] nvarchar(4000),\n\t [C4] nvarchar(4000),\n\t [C5] nvarchar(4000),\n\t [C6] nvarchar(4000),\n\t [C7] nvarchar(4000),\n\t [C8] nvarchar(4000)\n\t)\nWITH\n\t(\n\tDISTRIBUTION = ROUND_ROBIN,\n\t CLUSTERED COLUMNSTORE INDEX\n\t -- HEAP\n\t)\nGO\n\n--Uncomment the 4 lines below to create a stored procedure for data pipeline orchestration​\n--CREATE PROC bulk_load_dmpstandardverifys\n--AS\n--BEGIN\nCOPY INTO [dbo].[dmpstandardverifys]\n(C1 1, C2 2, C3 3, C4 4, C5 5, C6 6, C7 7, C8 8)\nFROM 'https://stak8ddmpdev1serving.dfs.core.windows.net/serving/Subnational-period-life-tables-2017-2019-CSV.csv'\nWITH\n(\n\tFILE_TYPE = 'CSV'\n\t,MAXERRORS = 0\n\t,ERRORFILE = 'https://stak8ddmpdev1serving.dfs.core.windows.net/serving/'\n\t,CREDENTIAL = ( IDENTITY = 'Managed Identity' )\n\t,ERRORFILE_CREDENTIAL = ( IDENTITY = 'Managed Identity' )\n)\n--END\nGO\n\nSELECT TOP 100 * FROM [dbo].[dmpstandardverifys]\nGO\n\n DROP TABLE dmpstandardverifys;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "sqlpool1",
+				"poolName": "sqlpool1"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"name": "PoCZeus_CreateTables",
+	"properties": {
+		"content": {
+			"query": "DROP TABLE dbo.MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH;\nGo;\n\nCREATE TABLE dbo.MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH\n(\n    STICHTAG date NOT NULL\n,   STAMMKST decimal(11,0) NOT NULL\n,   BST_NR decimal(6,0) NOT NULL\n,   BST_NAME varchar(255)\n,   ZEUS_FUNKTION_BEZEICHNUNG varchar(255) NOT NULL\n,   BASISKENNZAHL_NAME varchar(255) NOT NULL\n,   MENGENEINHEIT varchar(255) NOT NULL\n,   WERTART varchar(255) NOT NULL\n,   BEZUGSDATUM date NOT NULL\n,   WERT    int \n,   LADELAUF_ID decimal(22,0) NOT NULL\n,   FGUELTIG_VON date NOT NULL\n,   FGUELTIG_BIS date NOT NULL\n\n)\nWITH\n(\n    DISTRIBUTION = ROUND_ROBIN,\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "sqlpool1",
+				"poolName": "sqlpool1"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

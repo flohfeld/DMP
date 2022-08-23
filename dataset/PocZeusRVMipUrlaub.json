@@ -1,0 +1,89 @@
+{
+	"name": "PocZeusRVMipUrlaub",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storeprocessed",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "PoC_ZEUS"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "MipUrlaub.csv",
+				"folderPath": "PocZeus/Temp/RegelverarbeitungInput",
+				"fileSystem": "processed"
+			},
+			"columnDelimiter": ";",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Stichtag",
+				"type": "String"
+			},
+			{
+				"name": "MA-KBST",
+				"type": "String"
+			},
+			{
+				"name": "MA-RKOST",
+				"type": "String"
+			},
+			{
+				"name": "BST-Nr",
+				"type": "String"
+			},
+			{
+				"name": "BST-Name",
+				"type": "String"
+			},
+			{
+				"name": "Jobfamilie",
+				"type": "String"
+			},
+			{
+				"name": "Jobfamilie_Bez",
+				"type": "String"
+			},
+			{
+				"name": "Tätigkeitsgruppe",
+				"type": "String"
+			},
+			{
+				"name": "Tätigkeitsgruppe_Bez",
+				"type": "String"
+			},
+			{
+				"name": "Tätigkeitsdifferenzierung",
+				"type": "String"
+			},
+			{
+				"name": "Tätigkeitsdifferenzierung_bez",
+				"type": "String"
+			},
+			{
+				"name": "Urlaub-Soll-Gesamt",
+				"type": "String"
+			},
+			{
+				"name": "Urlaub-Restanspruch-Gesamt",
+				"type": "String"
+			},
+			{
+				"name": "MA-Kat",
+				"type": "String"
+			},
+			{
+				"name": "MA-Kat_bez",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

@@ -1,0 +1,10 @@
+{
+	"name": "sqsk8ddmpdev1dev1",
+	"properties": {
+		"privateLinkResourceId": "/subscriptions/0494c897-f1d8-40e6-802f-a5d7b636b9f0/resourceGroups/rsgk8ddmpdev1/providers/Microsoft.Sql/servers/sqsk8ddmpdev1dev1",
+		"groupId": "sqlServer",
+		"fqdns": [
+			"sqsk8ddmpdev1dev1.database.windows.net"
+		]
+	}
+}

@@ -1,0 +1,80 @@
+{
+	"name": "Notebook 1",
+	"properties": {
+		"folder": {
+			"name": "Spielwiese"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "sparkpool0",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2"
+			}
+		},
+		"metadata": {
+			"saveOutput": false,
+			"kernelspec": {
+				"name": "synapse_sparkdotnet",
+				"display_name": "Synapse SparkDotNet"
+			},
+			"language_info": {
+				"name": "csharp"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/0494c897-f1d8-40e6-802f-a5d7b636b9f0/resourceGroups/rsgk8ddmpdev1/providers/Microsoft.Synapse/workspaces/swak8ddmpdev1/bigDataPools/sparkpool0",
+				"name": "sparkpool0",
+				"type": "Spark",
+				"endpoint": "https://swak8ddmpdev1.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool0",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "2.4",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			}
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"//from pyspark.sql import SparkSession\r\n",
+					"\r\n",
+					"// Azure storage access info\r\n",
+					"var blob_account_name = \"stak8ddmpdev1landing\"; // replace with your blob name\r\n",
+					"var blob_container_name = \"landing\"; // replace with your container name\r\n",
+					"var blob_relative_path = \"/45\"; // replace with your relative folder path\r\n",
+					"var linked_service_name = \"storelanding\"; // replace with your linked service name\r\n",
+					"var blob_sas_token = Credentials.GetConnectionStringOrCreds(linked_service_name);\r\n",
+					"\r\n",
+					"spark.SparkContext.GetConf().Set($\"fs.azure.sas.{blob_container_name}.{blob_account_name}.blob.core.windows.net\", blob_sas_token);\r\n",
+					"\r\n",
+					"var wasbs_path = $\"wasb://{blob_container_name}@{blob_account_name}.blob.core.windows.net/{blob_relative_path}\";\r\n",
+					"\r\n",
+					"Console.WriteLine(wasbs_path);\r\n",
+					"\r\n",
+					"\r\n",
+					"FS.Ls(\"/\")\r\n",
+					""
+				],
+				"attachments": null,
+				"execution_count": 4
+			}
+		]
+	}
+}

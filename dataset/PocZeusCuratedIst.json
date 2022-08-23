@@ -1,0 +1,27 @@
+{
+	"name": "PocZeusCuratedIst",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storecurated",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "PoC_ZEUS"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "PocZeus/Ist",
+				"fileSystem": "curated"
+			},
+			"columnDelimiter": ";",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

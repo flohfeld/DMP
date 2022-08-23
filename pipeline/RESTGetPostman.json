@@ -1,0 +1,76 @@
+{
+	"name": "RESTGetPostman",
+	"properties": {
+		"activities": [
+			{
+				"name": "CopyPostman2Processed",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET"
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "RESTGetPostman",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "SinkProcessed",
+						"type": "DatasetReference",
+						"parameters": {
+							"Container": {
+								"value": "@pipeline().parameters.SinkContainer",
+								"type": "Expression"
+							},
+							"Directory": {
+								"value": "@pipeline().parameters.SinkDirectory",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"SinkContainer": {
+				"type": "string",
+				"defaultValue": "processed"
+			},
+			"SinkDirectory": {
+				"type": "string",
+				"defaultValue": "RestTest"
+			}
+		},
+		"folder": {
+			"name": "TB"
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-09-30T11:55:27Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

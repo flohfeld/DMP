@@ -1,0 +1,17 @@
+{
+	"name": "SQL SP LadelaufIDMax",
+	"properties": {
+		"content": {
+			"query": "DROP PROCEDURE [dbo].[Ladelauf_ID_Max]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE PROC [dbo].[Ladelauf_ID_Max](@LADELAUF_ID_MAX INT)\nAS\nBEGIN\nSELECT Max(Ladelauf_id) LADELAUF_ID_MAX from [dbo].[MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH]\nEND\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "sqlpool1",
+				"poolName": "sqlpool1"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

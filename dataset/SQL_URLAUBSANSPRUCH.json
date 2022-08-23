@@ -1,0 +1,82 @@
+{
+	"name": "SQL_URLAUBSANSPRUCH",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "swak8ddmpdev1-WorkspaceDefaultSqlServer",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"DBName": "sqlpool1"
+			}
+		},
+		"folder": {
+			"name": "PoC_ZEUS"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "STICHTAG",
+				"type": "date"
+			},
+			{
+				"name": "STAMMKST",
+				"type": "decimal",
+				"precision": 11,
+				"scale": 0
+			},
+			{
+				"name": "BST_NR",
+				"type": "decimal",
+				"precision": 6,
+				"scale": 0
+			},
+			{
+				"name": "BST_NAME",
+				"type": "varchar"
+			},
+			{
+				"name": "ZEUS_FUNKTION_BEZEICHNUNG",
+				"type": "varchar"
+			},
+			{
+				"name": "BASISKENNZAHL_NAME",
+				"type": "varchar"
+			},
+			{
+				"name": "MENGENEINHEIT",
+				"type": "varchar"
+			},
+			{
+				"name": "WERTART",
+				"type": "varchar"
+			},
+			{
+				"name": "BEZUGSDATUM",
+				"type": "date"
+			},
+			{
+				"name": "WERT",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "LADELAUF_ID",
+				"type": "decimal",
+				"precision": 22,
+				"scale": 0
+			},
+			{
+				"name": "FGUELTIG_VON",
+				"type": "date"
+			},
+			{
+				"name": "FGUELTIG_BIS",
+				"type": "date"
+			}
+		],
+		"typeProperties": {
+			"tableName": "dbo.MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

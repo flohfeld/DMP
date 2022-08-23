@@ -1,0 +1,541 @@
+{
+	"name": "DMP Demo_FastDatabrokerSource",
+	"properties": {
+		"activities": [
+			{
+				"name": "GetToken",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "GetClientSecret",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "GetClientId",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": true
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://auth.businesshub.deutschebahn.com/auth/realms/data-broker/protocol/openid-connect/token",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					"body": {
+						"value": "@concat(\n'client_id=', \nactivity('GetClientId').output.value, \n'&scope=datasources&client_secret=', \nactivity('GetClientSecret').output.value, \n'&grant_type=client_credentials'\n)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "GetFilesList",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "SetAccessToken",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat(\n'https://databroker.service.deutschebahn.com/api/files-api/v1/files?dataSourceId=',\nvariables('data_source_id'),\nif(less(length(variables('date_from')), 2), '', concat('&dateFrom=',variables('date_from'))),\nif(less(length(variables('date_to')), 2), '', concat('&dateTo=',variables('date_to')))\n)",
+						"type": "Expression"
+					},
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "GET",
+					"headers": {
+						"Authorization": {
+							"value": "Bearer @{variables('access_token')}",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "FileListArray",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "GetFilesList",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "tmp_file_list",
+					"value": {
+						"value": "@array(activity('GetFilesList').output.files)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "UntilError",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "UntilNextTokenNull",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@variables('error_occured')",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "IfNoFileInArray",
+							"type": "IfCondition",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@equals(length(variables('tmp_file_list')),0)",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "GetFirstFile",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "tmp_file_id",
+											"value": {
+												"value": "@first(variables('tmp_file_list')).id",
+												"type": "Expression"
+											}
+										}
+									},
+									{
+										"name": "DMP Demo_DatabrokerGetFile",
+										"type": "ExecutePipeline",
+										"dependsOn": [
+											{
+												"activity": "GetFirstFile",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"userProperties": [],
+										"typeProperties": {
+											"pipeline": {
+												"referenceName": "DMP Demo_DatabrokerGetFile",
+												"type": "PipelineReference"
+											},
+											"waitOnCompletion": false,
+											"parameters": {
+												"par_file_id": {
+													"value": "@variables('tmp_file_id')",
+													"type": "Expression"
+												},
+												"par_access_token": {
+													"value": "@variables('access_token')",
+													"type": "Expression"
+												}
+											}
+										}
+									},
+									{
+										"name": "RemoveFirstFileFromList",
+										"type": "SetVariable",
+										"dependsOn": [
+											{
+												"activity": "GetFirstFile",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "tmp_file_list_2",
+											"value": {
+												"value": "@skip(variables('tmp_file_list'),1)",
+												"type": "Expression"
+											}
+										}
+									},
+									{
+										"name": "OverrideFileList",
+										"type": "SetVariable",
+										"dependsOn": [
+											{
+												"activity": "RemoveFirstFileFromList",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "tmp_file_list",
+											"value": {
+												"value": "@variables('tmp_file_list_2')",
+												"type": "Expression"
+											}
+										}
+									},
+									{
+										"name": "SetError",
+										"type": "SetVariable",
+										"dependsOn": [
+											{
+												"activity": "RemoveFirstFileFromList",
+												"dependencyConditions": [
+													"Failed"
+												]
+											},
+											{
+												"activity": "OverrideFileList",
+												"dependencyConditions": [
+													"Failed"
+												]
+											}
+										],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "error_occured",
+											"value": true
+										}
+									},
+									{
+										"name": "Wait1",
+										"type": "Wait",
+										"dependsOn": [
+											{
+												"activity": "OverrideFileList",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"userProperties": [],
+										"typeProperties": {
+											"waitTimeInSeconds": {
+												"value": "@variables('SecondsToWaitToSpanCopy')",
+												"type": "Expression"
+											}
+										}
+									}
+								],
+								"ifTrueActivities": [
+									{
+										"name": "EndUntilLoop",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "error_occured",
+											"value": true
+										}
+									}
+								]
+							}
+						}
+					],
+					"timeout": "7.00:00:00"
+				}
+			},
+			{
+				"name": "SetAccessToken",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "GetToken",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "access_token",
+					"value": {
+						"value": "@{activity('GetToken').output.access_token}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "GetClientId",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://akvk8ddmpdev1user.vault.azure.net/secrets/databroker-client-id/6b417715c410472ab135d90cbf5fec61?api-version=7.0",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "GetClientSecret",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://akvk8ddmpdev1user.vault.azure.net/secrets/databroker-client-secret/2479372d982542f2af43502ca90d0227?api-version=7.0",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "SetNextToken",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "GetFilesList",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "tmp_next_token",
+					"value": {
+						"value": "@{activity('GetFilesList').output.nextToken}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "UntilNextTokenNull",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "FileListArray",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "SetNextToken",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(length(variables('tmp_next_token')),0)",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "IfFirstIteration",
+							"type": "IfCondition",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@variables('tmp_next_token_first_iteration')",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "GetNextFileListPage",
+										"type": "WebActivity",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "7.00:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"url": {
+												"value": "@concat(\n'https://databroker.service.deutschebahn.com/api/files-api/v1/files?nextToken=',\nvariables('tmp_next_token')\n)",
+												"type": "Expression"
+											},
+											"connectVia": {
+												"referenceName": "AutoResolveIntegrationRuntime",
+												"type": "IntegrationRuntimeReference"
+											},
+											"method": "GET",
+											"headers": {
+												"Authorization": {
+													"value": "Bearer @{variables('access_token')}",
+													"type": "Expression"
+												}
+											}
+										}
+									},
+									{
+										"name": "AppendFilesList",
+										"type": "AppendVariable",
+										"dependsOn": [
+											{
+												"activity": "GetNextFileListPage",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "tmp_file_list",
+											"value": {
+												"value": "@array(activity('GetNextFileListPage').output.files)",
+												"type": "Expression"
+											}
+										}
+									},
+									{
+										"name": "SetNextTokenInLoop",
+										"type": "SetVariable",
+										"dependsOn": [
+											{
+												"activity": "GetNextFileListPage",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "tmp_next_token",
+											"value": {
+												"value": "@{activity('GetNextFileListPage').output.nextToken}",
+												"type": "Expression"
+											}
+										}
+									}
+								],
+								"ifTrueActivities": [
+									{
+										"name": "SetFirstIterationVariableToFalse",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "tmp_next_token_first_iteration",
+											"value": "false"
+										}
+									}
+								]
+							}
+						}
+					],
+					"timeout": "7.00:00:00"
+				}
+			}
+		],
+		"variables": {
+			"access_token": {
+				"type": "String",
+				"defaultValue": "SYSTEM"
+			},
+			"tmp_file_list": {
+				"type": "Array"
+			},
+			"tmp_file_id": {
+				"type": "String",
+				"defaultValue": "SYSTEM"
+			},
+			"error_occured": {
+				"type": "Boolean",
+				"defaultValue": false
+			},
+			"tmp_file_list_2": {
+				"type": "Array"
+			},
+			"data_source_id": {
+				"type": "String",
+				"defaultValue": "b97a4f89-9af9-4d9d-8958-6e78005ab489"
+			},
+			"date_from": {
+				"type": "String",
+				"defaultValue": "2019-09-07"
+			},
+			"date_to": {
+				"type": "String"
+			},
+			"tmp_next_token": {
+				"type": "String",
+				"defaultValue": "SYSTEM"
+			},
+			"tmp_next_token_first_iteration": {
+				"type": "String",
+				"defaultValue": "true"
+			},
+			"SecondsToWaitToSpanCopy": {
+				"type": "String",
+				"defaultValue": "1"
+			}
+		},
+		"folder": {
+			"name": "TB"
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-10-04T11:47:13Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

@@ -1,0 +1,27 @@
+{
+	"name": "binanceREST_API",
+	"type": "Microsoft.Synapse/workspaces/linkedservices",
+	"properties": {
+		"parameters": {
+			"symbol": {
+				"type": "string",
+				"defaultValue": "BTCEUR"
+			},
+			"startTime": {
+				"type": "string",
+				"defaultValue": "1623110400000"
+			}
+		},
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://api.binance.com/api/v3/klines?symbol=@linkedService().symbol&interval=1d&startTime=@linkedService().startTime",
+			"enableServerCertificateValidation": false,
+			"authenticationType": "Anonymous"
+		},
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

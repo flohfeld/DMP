@@ -1,0 +1,17 @@
+{
+	"name": "PocZeusInitTable",
+	"properties": {
+		"content": {
+			"query": "DELETE FROM dbo.MART_PERSONALMENGENSTEUERUNG_URLAUBSANSPRUCH",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

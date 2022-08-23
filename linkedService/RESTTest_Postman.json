@@ -1,0 +1,23 @@
+{
+	"name": "RESTTest_Postman",
+	"type": "Microsoft.Synapse/workspaces/linkedservices",
+	"properties": {
+		"parameters": {
+			"Testparam1": {
+				"type": "string",
+				"defaultValue": "Testvalue"
+			}
+		},
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://postman-echo.com/get?var1=test&var2=@linkedService().Testparam1",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		},
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
